@@ -28,7 +28,24 @@ CAMERA = {
     "imageUrl": "https://example.invalid/cam/image",
 }
 # Smallest thing that clears the "too small" guard and reads as a real frame.
-GOOD_FRAME = b"\xff\xd8\xff" + b"\x00" * 4096
+def _real_jpeg(w: int = 352, h: int = 240, fill=(40, 40, 48)) -> bytes:
+    """A genuinely decodable frame.
+
+    The previous fixture was b"\xff\xd8\xff" plus zero padding, which is not a
+    valid JPEG. It passed only because nothing in the pipeline decoded it. Once
+    frames are measured before inference, an invalid fixture exercises the
+    error path instead of the happy path - which is how a green suite quietly
+    stops covering what it claims to.
+    """
+    import io
+
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new("RGB", (w, h), fill).save(buf, format="JPEG", quality=85)
+    return buf.getvalue()
+
+
+GOOD_FRAME = _real_jpeg()
 
 
 def reset() -> None:
@@ -201,7 +218,8 @@ async def main_async() -> int:
     def flaky_recovered(request):
         if "image" not in str(request.url):
             return httpx.Response(200, json=[CAMERA])
-        return httpx.Response(200, content=GOOD_FRAME + b"\x01")
+        # A visibly different frame, so dedup does not suppress the recovery.
+        return httpx.Response(200, content=_real_jpeg(fill=(90, 20, 20)))
 
     await run_loop(flaky_recovered, 3.0, fake_detect)
     results.append(check(

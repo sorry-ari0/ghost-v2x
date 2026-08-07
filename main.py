@@ -341,8 +341,16 @@ def jpeg_dimensions(jpeg: bytes) -> tuple[int, int]:
     """
     from PIL import Image
     import io
-    with Image.open(io.BytesIO(jpeg)) as img:
-        return img.width, img.height
+    try:
+        with Image.open(io.BytesIO(jpeg)) as img:
+            return img.width, img.height
+    except Exception as exc:
+        # An undecodable frame is a real degradation, but the raw PIL error
+        # ("cannot identify image file <_io.BytesIO object at 0x...>") tells an
+        # operator nothing about which camera or why.
+        raise RuntimeError(
+            f"camera frame is not a decodable image ({len(jpeg)} bytes)"
+        ) from exc
 
 
 async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
