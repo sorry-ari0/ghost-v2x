@@ -35,6 +35,137 @@ without knowing it.
 
 ---
 
+---
+
+## How it works, and why the method is sound
+
+### The problem this solves
+
+A pedestrian is struck when a vehicle and a person occupy the same space at the
+same moment. That is a geometry problem before it is a perception problem, and
+geometry is predictable: if you know where two objects are and how fast they
+are moving, you can calculate whether their paths intersect, when, and how
+closely — seconds before it happens.
+
+The obstacle has never been the mathematics. It is that nobody is measuring
+position and velocity at the intersection.
+
+### How the rest of the world solves it
+
+The state of the art is **roadside sensing**. China's vehicle-road-cloud
+cooperative programme (车路云一体化) is the largest deployment of this idea:
+roadside units combining cameras, millimetre-wave radar, and in higher
+specification installations LiDAR, mounted at intersections under national
+C-V2X standards, fusing detections to track road users and warn of conflicts.
+Comparable work exists in EU C-ITS corridors and US Connected Vehicle pilots.
+
+The approach is proven. It is also **capital-intensive per corner**: a sensor
+package, a mast, power, backhaul, and a maintenance contract, multiplied by
+every intersection you want covered. That cost is why coverage grows slowly
+even where the political will exists.
+
+### What we did differently
+
+New York has already installed the sensors. There are **968 NYC DOT traffic
+cameras**, 965 of them online, and **619 look at street intersections**. They
+are powered, networked, and publicly accessible. The gap was never hardware —
+it was that no one was reading them in real time.
+
+Ghost-V2X applies the same conflict-prediction method to infrastructure that
+already exists. The marginal cost of covering another intersection is a
+configuration change.
+
+### The trajectory method, step by step
+
+**1. Detect.** Each frame is upscaled 2x and passed to a hosted detector, which
+returns bounding boxes for vehicles (car, truck, bus, motorcycle) and
+vulnerable road users (person, bicycle).
+
+**2. Project onto the road surface.** This is the step most naive
+implementations skip, and skipping it makes everything downstream meaningless.
+Bounding boxes live in *image space*, where a pedestrian on the near sidewalk
+and a car across the intersection overlap in pixels while being fifteen metres
+apart in reality. We take the **bottom-centre of each box** — where the object
+meets the ground — and transform it through a homography onto a flat metric
+plane:
+
+```
+    [x']       [x]                          u = x'/w'
+    [y']  =  H [y]        in metres:        v = y'/w'
+    [w']       [1]
+```
+
+`H` is solved once from four points on the road surface mapped to their
+real-world separations. After this step every position is in metres, and
+distances mean what they say.
+
+**3. Track, and derive velocity.** Detections are associated frame to frame
+against each track's *predicted* position, gated by how far that class of
+object could plausibly travel in the elapsed time. Two observations give a
+velocity vector in m/s. Any track implying an impossible speed — above 6 m/s
+for a pedestrian, 32 m/s for a vehicle — is rejected, because at fifteen
+pedestrians in frame the dominant error is an identity switch, and a switch
+announces itself as impossible motion.
+
+**4. Solve for the conflict.** For a vehicle at position `p₁` moving at `v₁`
+and a pedestrian at `p₂` moving at `v₂`, work in relative terms:
+
+```
+dp = p₂ - p₁                     relative position (m)
+dv = v₂ - v₁                     relative velocity (m/s)
+
+t  = -dot(dp, dv) / dot(dv, dv)  seconds until closest approach
+d  = norm(dp + dv · t)           how close they will be, in metres
+```
+
+`t` is the time at which the gap between them is minimised — the closest point
+of approach. `d` is that minimum gap. A negative `t` means they are already
+separating.
+
+**Both numbers are required, and this is the part that separates a real
+conflict from a coincidence.** A `t` of 0.5s with a `d` of 8m is two objects
+passing near each other, which happens constantly at a busy intersection and is
+not dangerous. A `t` of 2.4s with a `d` of 0.4m is a collision course. We report
+a conflict only when `0 < t ≤ 8s` **and** `d ≤ 2m`.
+
+This is also where a pedestrian's crossing time enters naturally. It does not
+need a separate rule: a person's walking velocity and the width of roadway
+ahead of them are already encoded in `p₂` and `v₂`, so "will they still be in
+the roadway when the vehicle arrives" is answered by the same equation.
+
+**5. Decide what, if anything, to do.** Severity comes from `t`, but the
+*intervention* comes from how much time is left after our own latency — see
+[When to warn, and when to shut up](#when-to-warn-and-when-to-shut-up). This is
+where most systems in this space fail: they alert on risk rather than on
+actionability, and alert into windows too short for anyone to use.
+
+### Why we trust the numbers
+
+Metric scale is the failure mode that produces confident nonsense: get it
+wrong and every distance and every time-to-collision is off by a constant
+factor, while the output still looks entirely reasonable.
+
+So the system checks itself against a known physical constant. **Humans walk at
+about 1.4 m/s.** If tracked pedestrians who are actively crossing do not move
+at roughly that speed, the ground-plane scale is wrong by exactly that ratio.
+Ours was 3.6x too small; correcting it left a residual of about 1.8x, and
+`/api/state` publishes `scale_error_vs_walking` continuously so the error is
+visible rather than assumed. Closing the remainder requires four corners
+surveyed against real road features, which is a measurement, not more code.
+
+### How this maps to the judging criteria
+
+| Criterion | Where to look |
+|---|---|
+| **Working demo on real feeds** | Live on NYCTMC camera `156b0613` at Malcolm X Blvd (Lenox Ave) & 125 St. `/api/replay` forces a conflict through the real pipeline on demand. |
+| **NYC relevance** | Camera selection ranked against 69,090 NYC injury crashes; all 12 top-ranked independently appear on NYC's own Vision Zero priority list. 99 of the city's 304 priority intersections already have a usable camera. |
+| **Usefulness / insight** | The same detection serves EMS in seconds, DOT in years, at zero hardware cost. See `/insights`. |
+| **Technical execution** | Ground-plane projection, plausibility-gated tracking, closest-point-of-approach physics, latency-aware intervention, 9/9 adversarial scenarios, self-measured calibration. |
+| **Cloud Run** | Two services: `ghost-v2x` (sensor) and `ghost-v2x-receiver` (signal controller). |
+| **Open source** | This repository. Every non-obvious decision is explained where it lives, including the three bugs testing caught. |
+
+---
+
 ## Why this matters in NYC
 
 New York has 970+ public traffic cameras and a Vision Zero mandate. Those two
