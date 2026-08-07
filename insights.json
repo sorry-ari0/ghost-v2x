@@ -1,0 +1,802 @@
+[
+ {
+  "id": "1f0cfaad-4c0a-46e8-a5e3-f206d83a875d",
+  "name": "Delancy St @ Essex St",
+  "area": "Manhattan",
+  "latitude": 40.718557,
+  "longitude": -73.988199,
+  "people_injured": 112,
+  "crashes": 254,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 21
+   },
+   {
+    "hour": 19,
+    "count": 20
+   },
+   {
+    "hour": 0,
+    "count": 17
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 58
+   },
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 39
+   },
+   {
+    "factor": "Traffic Control Disregarded",
+    "count": 9
+   }
+  ],
+  "intervention": "Leading Pedestrian Interval",
+  "rationale": "Give pedestrians a 7-11 second head start before the parallel green. NYC has installed these widely and they are the standard treatment where turning drivers fail to yield."
+ },
+ {
+  "id": "156b0613-239a-4e77-aa0e-0a4becfc0b05",
+  "name": "Lenox Ave @ 125 St",
+  "area": "Manhattan",
+  "latitude": 40.80798,
+  "longitude": -73.945472,
+  "people_injured": 98,
+  "crashes": 220,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 19,
+    "count": 19
+   },
+   {
+    "hour": 16,
+    "count": 18
+   },
+   {
+    "hour": 18,
+    "count": 18
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 72
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 26
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 23
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "45cb119b-0e4a-442e-9410-b810ab8c255d",
+  "name": "7 Ave @ 43 St",
+  "area": "Manhattan",
+  "latitude": 40.756691,
+  "longitude": -73.986476,
+  "people_injured": 95,
+  "crashes": 239,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 17
+   },
+   {
+    "hour": 15,
+    "count": 17
+   },
+   {
+    "hour": 23,
+    "count": 16
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 33
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 22
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 21
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "bc2fd2da-1d56-46fa-a1ab-8674fac93877",
+  "name": "7 Ave @ 43 St - 64.186 - PTZ",
+  "area": "Manhattan",
+  "latitude": 40.756707,
+  "longitude": -73.986442,
+  "people_injured": 94,
+  "crashes": 237,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 17
+   },
+   {
+    "hour": 15,
+    "count": 17
+   },
+   {
+    "hour": 23,
+    "count": 16
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 33
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 22
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 21
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "d8122408-7092-41ba-a9db-ef8847edeaef",
+  "name": "Broadway @ 43 St",
+  "area": "Manhattan",
+  "latitude": 40.756583,
+  "longitude": -73.986156,
+  "people_injured": 94,
+  "crashes": 229,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 17
+   },
+   {
+    "hour": 23,
+    "count": 15
+   },
+   {
+    "hour": 15,
+    "count": 15
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 35
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 22
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 18
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "a3058350-1552-459f-8379-2fd06895e70a",
+  "name": "Delancey St @ Bowery St ",
+  "area": "Manhattan",
+  "latitude": 40.720317,
+  "longitude": -73.994016,
+  "people_injured": 89,
+  "crashes": 235,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 19,
+    "count": 20
+   },
+   {
+    "hour": 22,
+    "count": 19
+   },
+   {
+    "hour": 16,
+    "count": 17
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 92
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 30
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 11
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "98b37dd5-bd64-4ace-add0-37f5135df600",
+  "name": "St Nicholas Ave @ 125 St",
+  "area": "Manhattan",
+  "latitude": 40.810767,
+  "longitude": -73.952593,
+  "people_injured": 87,
+  "crashes": 212,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 22
+   },
+   {
+    "hour": 16,
+    "count": 17
+   },
+   {
+    "hour": 15,
+    "count": 17
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 57
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 29
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 12
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "9565e94d-66f2-4965-9c13-82d5500d6cfd",
+  "name": "Broadway @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7558094297322,
+  "longitude": -73.9864124090652,
+  "people_injured": 87,
+  "crashes": 229,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 20
+   },
+   {
+    "hour": 11,
+    "count": 15
+   },
+   {
+    "hour": 14,
+    "count": 14
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 44
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 25
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 20
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "e4542be1-fe19-4efa-a25e-0d0c1065c8a2",
+  "name": "58 St @ QBB UL Approach",
+  "area": "Manhattan",
+  "latitude": 40.75959,
+  "longitude": -73.96396,
+  "people_injured": 84,
+  "crashes": 218,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 18,
+    "count": 21
+   },
+   {
+    "hour": 20,
+    "count": 19
+   },
+   {
+    "hour": 9,
+    "count": 18
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 79
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 30
+   },
+   {
+    "factor": "Other Vehicular",
+    "count": 15
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "bca4a4b0-d73f-4937-9301-85ff8293bd94",
+  "name": "7 AVE @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.75609,
+  "longitude": -73.9869,
+  "people_injured": 84,
+  "crashes": 222,
+  "killed": 1,
+  "peak_hours": [
+   {
+    "hour": 17,
+    "count": 18
+   },
+   {
+    "hour": 14,
+    "count": 16
+   },
+   {
+    "hour": 15,
+    "count": 16
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 38
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 23
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 19
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "c61490de-9ab7-4321-919c-cf8ad9ca5100",
+  "name": "2 Ave @ 59 St (QBB)",
+  "area": "Manhattan",
+  "latitude": 40.760978,
+  "longitude": -73.964082,
+  "people_injured": 83,
+  "crashes": 218,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 20,
+    "count": 21
+   },
+   {
+    "hour": 18,
+    "count": 18
+   },
+   {
+    "hour": 9,
+    "count": 17
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 85
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 31
+   },
+   {
+    "factor": "Other Vehicular",
+    "count": 12
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "19789499-03ac-45de-9401-a7a71ea60d1e",
+  "name": "7 AVE @ 44 St",
+  "area": "Manhattan",
+  "latitude": 40.75736,
+  "longitude": -73.986,
+  "people_injured": 82,
+  "crashes": 173,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 18,
+    "count": 17
+   },
+   {
+    "hour": 16,
+    "count": 13
+   },
+   {
+    "hour": 17,
+    "count": 13
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 31
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 13
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 13
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "5b44d19e-de48-4941-b071-d2a4c08bd230",
+  "name": "2 Ave @ 58 St",
+  "area": "Manhattan",
+  "latitude": 40.759333,
+  "longitude": -73.965302,
+  "people_injured": 80,
+  "crashes": 186,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 20,
+    "count": 18
+   },
+   {
+    "hour": 17,
+    "count": 15
+   },
+   {
+    "hour": 9,
+    "count": 15
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 59
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 30
+   },
+   {
+    "factor": "Other Vehicular",
+    "count": 11
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "d78ebdc6-2211-479e-bda6-59d79db20258",
+  "name": "8 Ave @ 57 St",
+  "area": "Manhattan",
+  "latitude": 40.766796,
+  "longitude": -73.9829,
+  "people_injured": 79,
+  "crashes": 165,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 10,
+    "count": 13
+   },
+   {
+    "hour": 15,
+    "count": 13
+   },
+   {
+    "hour": 19,
+    "count": 11
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 35
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 29
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 12
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "9d86d84c-6d3a-45a6-a8ad-fb5ab52f2b52",
+  "name": "E 57 St @ QBB",
+  "area": "Manhattan",
+  "latitude": 40.7589949664454,
+  "longitude": -73.9644856628626,
+  "people_injured": 74,
+  "crashes": 175,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 20,
+    "count": 19
+   },
+   {
+    "hour": 9,
+    "count": 15
+   },
+   {
+    "hour": 15,
+    "count": 14
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 58
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 30
+   },
+   {
+    "factor": "Other Vehicular",
+    "count": 11
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "c733e881-862d-4874-9d00-9bfdc3b27cbc",
+  "name": "Grand St @ Bowery",
+  "area": "Manhattan",
+  "latitude": 40.718427,
+  "longitude": -73.99483,
+  "people_injured": 73,
+  "crashes": 199,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 18,
+    "count": 23
+   },
+   {
+    "hour": 13,
+    "count": 18
+   },
+   {
+    "hour": 16,
+    "count": 18
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 74
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 35
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 13
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "4ebe49c8-3e68-43f7-b415-da3db9f72693",
+  "name": "7 Ave @ 54 St",
+  "area": "Manhattan",
+  "latitude": 40.763617,
+  "longitude": -73.981436,
+  "people_injured": 73,
+  "crashes": 120,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 18,
+    "count": 10
+   },
+   {
+    "hour": 17,
+    "count": 10
+   },
+   {
+    "hour": 12,
+    "count": 9
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 38
+   },
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 18
+   },
+   {
+    "factor": "Backing Unsafely",
+    "count": 6
+   }
+  ],
+  "intervention": "Daylighting + advance warning",
+  "rationale": "Remove parking within 20ft of the crosswalk so drivers see people waiting, and add an active warning beacon. This is the failure mode Ghost-V2X detects directly - a driver who has not registered a pedestrian already in the roadway."
+ },
+ {
+  "id": "f6ca5824-45da-48a9-8268-2725eed58b79",
+  "name": "Fordham Rd @  Grand Concourse",
+  "area": "Bronx",
+  "latitude": 40.862444,
+  "longitude": -73.897131,
+  "people_injured": 72,
+  "crashes": 170,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 19,
+    "count": 20
+   },
+   {
+    "hour": 16,
+    "count": 16
+   },
+   {
+    "hour": 17,
+    "count": 14
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 28
+   },
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 27
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 8
+   }
+  ],
+  "intervention": "Leading Pedestrian Interval",
+  "rationale": "Give pedestrians a 7-11 second head start before the parallel green. NYC has installed these widely and they are the standard treatment where turning drivers fail to yield."
+ },
+ {
+  "id": "ae67eb8d-0aed-4204-b7a1-3621ed9eef65",
+  "name": "Tillary St EB @ Jay St",
+  "area": "Brooklyn",
+  "latitude": 40.696002,
+  "longitude": -73.987094,
+  "people_injured": 72,
+  "crashes": 176,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 19,
+    "count": 15
+   },
+   {
+    "hour": 9,
+    "count": 14
+   },
+   {
+    "hour": 18,
+    "count": 14
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 56
+   },
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 22
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 10
+   }
+  ],
+  "intervention": "Leading Pedestrian Interval",
+  "rationale": "Give pedestrians a 7-11 second head start before the parallel green. NYC has installed these widely and they are the standard treatment where turning drivers fail to yield."
+ },
+ {
+  "id": "d7ee32d6-895f-4e37-bdd9-f97b06b24f3d",
+  "name": "Tillary St @ Jay St",
+  "area": "Brooklyn",
+  "latitude": 40.696073,
+  "longitude": -73.987095,
+  "people_injured": 72,
+  "crashes": 177,
+  "killed": 0,
+  "peak_hours": [
+   {
+    "hour": 19,
+    "count": 15
+   },
+   {
+    "hour": 9,
+    "count": 14
+   },
+   {
+    "hour": 18,
+    "count": 14
+   }
+  ],
+  "top_factors": [
+   {
+    "factor": "Failure to Yield Right-of-Way",
+    "count": 56
+   },
+   {
+    "factor": "Driver Inattention/Distraction",
+    "count": 22
+   },
+   {
+    "factor": "Pedestrian/Bicyclist/Other Pedestrian Error/Confusion",
+    "count": 11
+   }
+  ],
+  "intervention": "Leading Pedestrian Interval",
+  "rationale": "Give pedestrians a 7-11 second head start before the parallel green. NYC has installed these widely and they are the standard treatment where turning drivers fail to yield."
+ }
+]

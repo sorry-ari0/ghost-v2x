@@ -1,0 +1,189 @@
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+       background:#0b0e14;color:#c8d0e0;padding:2.5rem 2rem 4rem;
+       max-width:1100px;margin:0 auto}
+  h1{font-size:1rem;letter-spacing:.16em;text-transform:uppercase;
+     color:#7d8799;margin:0 0 .3rem}
+  .lede{color:#8b95a8;margin:0 0 2.5rem;max-width:60ch}
+  h2{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+     margin:3rem 0 .3rem;padding-top:1.6rem;border-top:1px solid #1f2634}
+  .horizon{color:#5a6373;font-size:.72rem;margin-bottom:1.2rem}
+  .ems h2{color:#ff4d5e}.dot h2{color:#4de2ff}.law h2{color:#ffd166}
+  .hero{display:flex;gap:2.5rem;flex-wrap:wrap;margin:1.5rem 0 2rem}
+  .stat{min-width:130px}
+  .n{font-size:2.4rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+  .n.red{color:#ff4d5e}.n.cy{color:#4de2ff}.n.am{color:#ffd166}
+  .lbl{color:#5a6373;font-size:.72rem;text-transform:uppercase;
+       letter-spacing:.08em}
+  table{width:100%;border-collapse:collapse;margin-top:.8rem;font-size:.8rem}
+  th{text-align:left;color:#5a6373;font-size:.68rem;text-transform:uppercase;
+     letter-spacing:.09em;padding:.5rem .6rem;border-bottom:1px solid #1f2634}
+  td{padding:.55rem .6rem;border-bottom:1px solid #141a24;vertical-align:top}
+  tr:hover td{background:#101622}
+  .name{color:#e8edf5}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .why{color:#6b7688;font-size:.74rem;line-height:1.45}
+  .tag{display:inline-block;padding:.12rem .5rem;border-radius:99px;
+       font-size:.68rem;border:1px solid #2a3346;color:#9aa5b8;white-space:nowrap}
+  .live{background:#101622;border:1px solid #1f2634;border-radius:10px;
+        padding:1.1rem 1.3rem;margin:1.2rem 0}
+  .lrisk{font-size:1.8rem;font-weight:700}
+  .CLEAR{color:#3ddc97}.LOW{color:#ffd166}.MEDIUM{color:#ff9f45}
+  .HIGH{color:#ff4d5e}.UNKNOWN{color:#5a6373}
+  .note{color:#6b7688;font-size:.78rem;max-width:70ch;line-height:1.6}
+  a{color:#4de2ff}
+  .wink{color:#5a6373;font-size:.74rem;font-style:italic}
+</style>
+
+<h1>Ghost-V2X · Who this is for</h1>
+<p class="lede">
+  One camera network, three audiences, three time horizons. The same detection
+  that warns a signal controller in seconds tells the DOT what to build over
+  years.
+</p>
+
+<section class="ems">
+  <h2>Emergency response</h2>
+  <div class="horizon">Horizon: seconds</div>
+
+  <div class="live">
+    <div class="lbl">Monitored intersection, live</div>
+    <div class="lrisk UNKNOWN" id="risk">—</div>
+    <div id="cam" style="color:#8b95a8">connecting…</div>
+    <div id="dispatch" class="note" style="margin-top:.7rem"></div>
+  </div>
+
+  <p class="note">
+    A 911 call starts after someone sees the impact, finds a phone, and
+    describes a location. Ghost-V2X knows the coordinates before the impact,
+    because it saw the trajectories converge. When risk goes HIGH it already
+    holds the exact lat/long, the cross streets, and how many people are in the
+    roadway.
+    <br><br>
+    That does not dispatch an ambulance on a prediction, which would be wrong.
+    It means when the call <i>does</i> come, dispatch already has a
+    corroborating location and a headcount instead of a description. In cardiac
+    and haemorrhagic trauma, minutes are the whole game.
+  </p>
+</section>
+
+<section class="dot">
+  <h2>City infrastructure</h2>
+  <div class="horizon">Horizon: years</div>
+
+  <div class="hero">
+    <div class="stat"><div class="n cy" id="tot-hurt">—</div>
+      <div class="lbl">injured, 20 corners</div></div>
+    <div class="stat"><div class="n cy" id="tot-killed">—</div>
+      <div class="lbl">killed</div></div>
+    <div class="stat"><div class="n cy">99</div>
+      <div class="lbl">of 304 priority<br>intersections covered</div></div>
+    <div class="stat"><div class="n cy">$0</div>
+      <div class="lbl">new hardware</div></div>
+  </div>
+
+  <p class="note">
+    Cities buying pedestrian safety today mostly buy <b>sensors</b> — roadside
+    LiDAR and radar units mounted at each intersection, the approach behind most
+    "smart intersection" programmes internationally. It works, and it costs a
+    capital line item per corner plus power, mounting, and maintenance.
+    <br><br>
+    New York already installed the sensors. There are 968 DOT cameras, and 619
+    of them look at street intersections. The gap was never hardware, it was
+    that nobody was reading them in real time. Every recommendation below comes
+    from NYPD's own recorded contributing factor at that corner, matched to the
+    countermeasure NYC DOT already deploys for it.
+  </p>
+
+  <table>
+    <thead><tr>
+      <th>Intersection</th><th class="num">Injured</th><th class="num">Peak</th>
+      <th>Recommended intervention</th>
+    </tr></thead>
+    <tbody id="dot-rows">
+      <tr><td colspan="4" style="color:#5a6373">loading…</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="law">
+  <h2>Personal injury counsel</h2>
+  <div class="horizon">Horizon: ongoing · <span class="wink">tongue firmly in cheek</span></div>
+
+  <p class="note">
+    The uncomfortable version of the same table. These are the corners where
+    New Yorkers are most reliably hurt, ranked, with peak hours. Somebody is
+    already buying bus-shelter advertising near them on instinct.
+    <br><br>
+    The serious point underneath the joke: this data has been public the entire
+    time. It took a few hours to rank every camera in the city against 69,090
+    injury crashes. The reason nobody had done it is not difficulty or cost —
+    and that should bother us more than the joke is funny.
+  </p>
+
+  <table>
+    <thead><tr>
+      <th>Corner</th><th class="num">Injured</th><th class="num">Crashes</th>
+      <th>Busiest hour</th>
+    </tr></thead>
+    <tbody id="law-rows">
+      <tr><td colspan="4" style="color:#5a6373">loading…</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<p class="note" style="margin-top:3rem">
+  <a href="/map">Risk map</a> ·
+  <a href="/">Live sensor</a> ·
+  <a href="/api/state">Raw state</a>
+</p>
+
+<script>
+const hr = h => String(h).padStart(2,'0') + ':00';
+
+async function load(){
+  const d = await (await fetch('/api/insights')).json();
+
+  document.getElementById('tot-hurt').textContent =
+    d.intersections.reduce((a,c)=>a+c.people_injured,0).toLocaleString();
+  document.getElementById('tot-killed').textContent =
+    d.intersections.reduce((a,c)=>a+(c.killed||0),0);
+
+  document.getElementById('dot-rows').innerHTML = d.intersections.map(c => `
+    <tr>
+      <td class="name">${c.name}<div class="why">${c.top_factors?.[0]?.factor ?? ''}</div></td>
+      <td class="num">${c.people_injured}</td>
+      <td class="num">${c.peak_hours?.[0] ? hr(c.peak_hours[0].hour) : '—'}</td>
+      <td><span class="tag">${c.intervention}</span>
+          <div class="why">${c.rationale}</div></td>
+    </tr>`).join('');
+
+  document.getElementById('law-rows').innerHTML = d.intersections.slice(0,10).map(c => `
+    <tr>
+      <td class="name">${c.name}</td>
+      <td class="num">${c.people_injured}</td>
+      <td class="num">${c.crashes}</td>
+      <td>${c.peak_hours?.[0] ? hr(c.peak_hours[0].hour) : '—'}</td>
+    </tr>`).join('');
+}
+
+async function live(){
+  try{
+    const s = await (await fetch('/api/state')).json();
+    const r = document.getElementById('risk');
+    r.textContent = s.risk; r.className = 'lrisk ' + s.risk;
+    document.getElementById('cam').textContent = s.camera?.name ?? '—';
+    const hot = s.risk === 'HIGH' || s.risk === 'MEDIUM';
+    document.getElementById('dispatch').innerHTML = hot
+      ? `<b style="color:#ff4d5e">Dispatch packet ready</b> — ` +
+        `${s.camera.lat}, ${s.camera.lon} · ` +
+        `${s.counts.vehicles ?? 0} vehicles, ${s.counts.pedestrians ?? 0} people in frame` +
+        (s.conflicts?.[0] ? ` · closest approach ${s.conflicts[0].seconds_to_closest_approach}s` : '')
+      : `No conflict. Location held: ${s.camera?.lat ?? '—'}, ${s.camera?.lon ?? '—'}`;
+  }catch(e){}
+}
+
+load(); live(); setInterval(live, 2000);
+</script>

@@ -826,6 +826,28 @@ def api_alert():
     return JSONResponse(build_alert())
 
 
+@app.get("/insights", response_class=HTMLResponse)
+def insights_page():
+    """Who this is for: EMS in seconds, DOT in years, counsel ongoing."""
+    path = Path(__file__).parent / "insights.html"
+    if not path.exists():
+        return HTMLResponse("<h1>insights.html missing</h1>", status_code=500)
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/insights")
+def api_insights():
+    """Per-intersection interventions, derived from NYPD contributing factors.
+
+    Built offline by build_insights.py so the page never waits on Socrata.
+    """
+    path = Path(__file__).parent / "insights.json"
+    if not path.exists():
+        return JSONResponse({"intersections": []})
+    return JSONResponse(
+        {"intersections": json.loads(path.read_text(encoding="utf-8"))})
+
+
 @app.get("/map", response_class=HTMLResponse)
 def map_page():
     """Risk map: crash history, live status, and the near-miss signal."""
