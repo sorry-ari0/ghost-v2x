@@ -10,6 +10,7 @@ still serves, so the container is always deployable.
 from __future__ import annotations
 
 import asyncio
+import base64
 import hashlib
 import json
 import logging
@@ -53,11 +54,17 @@ CAMERA_MATCH = os.getenv("CAMERA_MATCH", "Lenox Ave @ 125 St")
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "1.0"))
 
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY", "")
-ROBOFLOW_MODEL = os.getenv("ROBOFLOW_MODEL", "vehicle-detection-3mmwj/1")
+# Must detect BOTH vehicles and people in one pass. Most "vehicle detection"
+# models on Universe have no person class at all, which silently yields zero
+# pedestrians and therefore zero conflicts - the system looks healthy and
+# reports CLEAR forever. A COCO-trained model covers person, car, truck, bus,
+# bicycle, and motorcycle together.
+ROBOFLOW_MODEL = os.getenv("ROBOFLOW_MODEL", "coco/9")
 ROBOFLOW_URL = os.getenv("ROBOFLOW_URL", "https://detect.roboflow.com")
 # DOT frames are only 352x240, so a mid-ground pedestrian is ~25px tall. The
 # usual 0.4 threshold discards most of them.
 CONFIDENCE = float(os.getenv("CONFIDENCE", "0.25"))
+ROBOFLOW_OVERLAP = int(os.getenv("ROBOFLOW_OVERLAP", "45"))
 
 # Closest-point-of-approach thresholds, in real-world units.
 TTC_HORIZON_S = float(os.getenv("TTC_HORIZON_S", "8.0"))
@@ -289,13 +296,32 @@ def camera_image_url(cam: dict) -> str:
 
 
 async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
+    """Run hosted inference on one frame.
+
+    detect.roboflow.com wants the image base64-encoded in the request body
+    with a form content-type - posting raw JPEG bytes fails. Its `confidence`
+    query parameter is a percentage (0-100), not a 0-1 fraction; sending 0.25
+    there reads as 0%, which returns every low-confidence box in the frame.
+    """
     r = await client.post(
         f"{ROBOFLOW_URL}/{ROBOFLOW_MODEL}",
-        params={"api_key": ROBOFLOW_API_KEY, "confidence": CONFIDENCE},
-        content=jpeg,
+        params={
+            "api_key": ROBOFLOW_API_KEY,
+            "confidence": round(CONFIDENCE * 100),
+            "overlap": ROBOFLOW_OVERLAP,
+            "format": "json",
+        },
+        content=base64.b64encode(jpeg),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=30,
     )
+    if r.status_code == 401:
+        raise RuntimeError("Roboflow rejected the API key (401)")
+    if r.status_code == 404:
+        raise RuntimeError(
+            f"Roboflow model {ROBOFLOW_MODEL!r} not found (404) - "
+            "it must be 'model-slug/version', e.g. 'coco/9'"
+        )
     r.raise_for_status()
     return r.json().get("predictions", [])
 
@@ -385,7 +411,11 @@ async def loop() -> None:
                     STATE.duplicate_frames += 1
                     await asyncio.sleep(POLL_SECONDS)
                     continue
-                last_frame_hash = digest
+                # NB: the hash is committed only after the cycle succeeds, at
+                # the bottom of this block. Committing it here meant a failed
+                # inference on a static frame was never retried - the next poll
+                # saw a duplicate, skipped, and the system sat in a stale state
+                # instead of escalating to FAIL_SAFE. Found by chaos_test.py.
 
                 if not ROBOFLOW_API_KEY:
                     STATE.status = "FAIL_SAFE"
@@ -418,6 +448,8 @@ async def loop() -> None:
                 STATE.last_ok = now
                 STATE.consecutive_errors = 0
                 STATE.updated = now
+                # Only now is this frame truly consumed.
+                last_frame_hash = digest
 
             except Exception as exc:
                 STATE.errors += 1
