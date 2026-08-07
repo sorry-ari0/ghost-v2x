@@ -152,6 +152,39 @@ is fine - within 20% of true scale is dramatically better than image space.
 
 ---
 
+## Three things measurement changed
+
+Each of these was found by testing the running system, not by reasoning about it.
+
+**Raw camera frames detect nothing.** At 352x240 a mid-ground pedestrian is
+~25px, below what a detector trained near 640x640 resolves. The same frame
+upscaled 2x to 704x480 returns 40+ objects including 20+ pedestrians. Without
+`UPSCALE`, the system reports CLEAR forever while appearing perfectly healthy -
+no error, no warning. It is the worst failure mode in the system because
+nothing looks broken.
+
+**Identity switches masquerade as imminent collisions.** With 15 pedestrians in
+frame, greedy association occasionally hands one track another's detection. The
+apparent jump becomes a phantom velocity aimed at whatever is nearby, and that
+produced sub-second TTCs against traffic in no danger - a HIGH every 30
+seconds, which in a real control room gets the system muted inside a week. Any
+track implying an impossible speed (>6 m/s for a person, >32 m/s for a vehicle)
+is now rejected, because an identity switch announces itself as impossible
+motion. Marginal conflicts must also persist across assessments, though
+imminent ones (TTC <= 3s) bypass that - filter the marginal, never delay the
+urgent.
+
+**The system measures its own calibration error.** The ground plane started as
+an eyeball estimate, and a wrong metric scale produces numbers that look
+entirely reasonable. But walking speed is a known constant: if tracked
+pedestrians who are actively crossing do not move at ~1.4 m/s, the scale is
+wrong by exactly that ratio. It was 3.6x too small. Corrected to 65x79m, the
+residual is ~1.8x, and `/api/state` publishes `scale_error_vs_walking` so it is
+visible rather than assumed. Closing the rest needs four corners placed against
+surveyed road features, not more code.
+
+---
+
 ## Fail-safe behaviour
 
 The system's job is to **stop asserting things about the street** the moment it
@@ -246,10 +279,11 @@ uvicorn main:app --reload
 | `CAMERA_MATCH` | `Lenox Ave @ 125 St` | Substring match on camera name |
 | `POLL_SECONDS` | `1.0` | Poll cadence; camera refreshes ~2.0s, dupes discarded |
 | `ROBOFLOW_API_KEY` | *(unset)* | Without it, boots to `FAIL_SAFE` |
-| `ROBOFLOW_MODEL` | `vehicle-detection-3mmwj/1` | `model-slug/version` |
+| `ROBOFLOW_MODEL` | `coco/38` | Verified: 5 people + 14 vehicles on a live frame |
 | `CONFIDENCE` | `0.25` | Detection threshold (frames are only 352x240) |
+| `UPSCALE` | `2.0` | Enlarge before inference; raw frames detect **nothing** |
 | `SRC_QUAD` | Lenox estimate | 4 road-surface points, fractions of w,h |
-| `DST_QUAD` | `0,22 18,22 18,0 0,0` | Same 4 points in metres |
+| `DST_QUAD` | `0,79 65,79 65,0 0,0` | Same 4 points in metres (scale-corrected) |
 | `TTC_HORIZON_S` | `8.0` | Ignore conflicts further out than this |
 | `MISS_DISTANCE_M` | `2.0` | Proximity that counts as a conflict |
 | `WEBHOOK_URL` | *(unset)* | Where alerts POST; unset disables alerting |

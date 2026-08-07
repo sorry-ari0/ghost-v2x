@@ -59,7 +59,12 @@ ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY", "")
 # pedestrians and therefore zero conflicts - the system looks healthy and
 # reports CLEAR forever. A COCO-trained model covers person, car, truck, bus,
 # bicycle, and motorcycle together.
-ROBOFLOW_MODEL = os.getenv("ROBOFLOW_MODEL", "coco/9")
+# coco/38 verified against a live Lenox frame: 27 detections, 5 people, 14
+# vehicles. coco/9 was the previous default and returns 1 car and ZERO people
+# on the same frame - which yields no vehicle-pedestrian conflicts ever, while
+# the system looks perfectly healthy. Do not change this without re-running
+# probe_model.py.
+ROBOFLOW_MODEL = os.getenv("ROBOFLOW_MODEL", "coco/38")
 ROBOFLOW_URL = os.getenv("ROBOFLOW_URL", "https://detect.roboflow.com")
 # DOT frames are only 352x240, so a mid-ground pedestrian is ~25px tall. The
 # usual 0.4 threshold discards most of them.
