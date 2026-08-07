@@ -211,6 +211,8 @@ class State:
     counts: dict[str, int] = field(default_factory=dict)
     frames: int = 0
     duplicate_frames: int = 0
+    alerts_sent: int = 0
+    alert_error: str = ""
     errors: int = 0
     consecutive_errors: int = 0
     last_ok: float | None = None
@@ -227,6 +229,8 @@ class State:
             "camera": self.camera,
             "frames": self.frames,
             "duplicate_frames": self.duplicate_frames,
+            "alerts_sent": self.alerts_sent,
+            "alert_error": self.alert_error,
             "errors": self.errors,
             "seconds_since_good_frame": age,
             "updated": self.updated,
@@ -382,6 +386,9 @@ async def loop() -> None:
     async with httpx.AsyncClient(follow_redirects=True) as client:
         while True:
             try:
+                if time.time() < REPLAY_UNTIL:
+                    await asyncio.sleep(POLL_SECONDS)
+                    continue
                 if not cam:
                     cam = await pick_camera(client)
                     STATE.camera = {
@@ -450,6 +457,7 @@ async def loop() -> None:
                 STATE.updated = now
                 # Only now is this frame truly consumed.
                 last_frame_hash = digest
+                await emit_alert(client)
 
             except Exception as exc:
                 STATE.errors += 1
@@ -467,8 +475,155 @@ async def loop() -> None:
                     TRACKER.tracks.clear()
                 if STATE.consecutive_errors >= 5:
                     cam = {}  # re-select; this one may be down for maintenance
+                await emit_alert(client)
 
             await asyncio.sleep(POLL_SECONDS)
+
+
+
+# --- alerting ---------------------------------------------------------------
+
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
+WEBHOOK_AUTH_HEADER = os.getenv("WEBHOOK_AUTH_HEADER", "Authorization")
+WEBHOOK_AUTH_VALUE = os.getenv("WEBHOOK_AUTH_VALUE", "")
+# Floor between posts, so a risk level oscillating on the boundary cannot
+# machine-gun the events dashboard and bury the alerts that matter.
+WEBHOOK_MIN_INTERVAL_S = float(os.getenv("WEBHOOK_MIN_INTERVAL_S", "3.0"))
+
+# UNKNOWN maps to No_Action deliberately. When the system cannot see the
+# street it must never request an intervention - the grid falls back to normal
+# fixed timing rather than acting on a guess.
+RECOMMENDED_ACTION = {
+    "HIGH": "Extend_All_Red_5s",
+    "MEDIUM": "Activate_LED_Warning",
+    "LOW": "Monitor",
+    "CLEAR": "No_Action",
+    "UNKNOWN": "No_Action",
+}
+SEVERITY = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low",
+            "CLEAR": "low", "UNKNOWN": "low"}
+# UNKNOWN sits at the bottom so losing the feed never counts as an
+# escalation and never fast-paths an alert past the throttle.
+RISK_ORDER = {"UNKNOWN": 0, "CLEAR": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3}
+
+
+def build_alert() -> dict:
+    """The webhook payload. Mirrors docs/roboflow-agent-prompt.md."""
+    top = STATE.conflicts[0] if STATE.conflicts else None
+    return {
+        "event_type": "collision_warning",
+        "schema_version": "ghost-v2x.v1",
+        "camera_id": STATE.camera.get("id"),
+        "camera_name": STATE.camera.get("name"),
+        "status": STATE.status,
+        "reason": STATE.reason,
+        "risk_level": STATE.risk,
+        "severity": SEVERITY.get(STATE.risk, "low"),
+        "ttc_seconds": top["seconds_to_closest_approach"] if top else None,
+        "miss_distance_m": top["miss_distance_m"] if top else None,
+        "recommended_action": RECOMMENDED_ACTION.get(STATE.risk, "No_Action"),
+        "collision_warning": STATE.risk in ("HIGH", "MEDIUM"),
+        "vehicle_count": STATE.counts.get("vehicles", 0),
+        "pedestrian_count": STATE.counts.get("pedestrians", 0),
+        "alert_description": (
+            f"Ghost-V2X {STATE.risk}: {RECOMMENDED_ACTION.get(STATE.risk, 'No_Action')}"
+            + (f"; TTC={top['seconds_to_closest_approach']}s"
+               f"; miss={top['miss_distance_m']}m" if top else "")
+            + f"; vehicles={STATE.counts.get('vehicles', 0)}"
+            f"; pedestrians={STATE.counts.get('pedestrians', 0)}"
+            + ("" if STATE.status == "ACTIVE" else f"; {STATE.status}: {STATE.reason}")
+        ),
+    }
+
+
+async def emit_alert(client: httpx.AsyncClient, force: bool = False) -> None:
+    """Post on transitions only. Never raises - alerting must not stop sensing."""
+    global _last_alert_key, _last_alert_at
+    if not WEBHOOK_URL:
+        return
+    key = (STATE.status, STATE.risk)
+    now = time.time()
+    if not force:
+        if key == _last_alert_key:
+            return
+        # An anti-flap throttle must never delay an escalation. Risk climbing
+        # toward HIGH is the one event that has to go out immediately; only
+        # de-escalation and same-level churn are worth rate limiting.
+        previous = _last_alert_key[1] if _last_alert_key else "CLEAR"
+        escalating = RISK_ORDER.get(STATE.risk, 0) > RISK_ORDER.get(previous, 0)
+        if not escalating and now - _last_alert_at < WEBHOOK_MIN_INTERVAL_S:
+            return
+    _last_alert_key, _last_alert_at = key, now
+
+    headers = {"Content-Type": "application/json"}
+    if WEBHOOK_AUTH_VALUE:
+        headers[WEBHOOK_AUTH_HEADER] = WEBHOOK_AUTH_VALUE
+    try:
+        r = await client.post(WEBHOOK_URL, json=build_alert(),
+                              headers=headers, timeout=10)
+        STATE.alerts_sent += 1
+        if r.status_code >= 400:
+            STATE.alert_error = f"HTTP {r.status_code}: {r.text[:120]}"
+            log.warning("alert POST rejected: %s", STATE.alert_error)
+        else:
+            STATE.alert_error = ""
+            log.info("alert sent: %s / %s", STATE.status, STATE.risk)
+    except Exception as exc:
+        STATE.alert_error = f"{type(exc).__name__}: {exc}"
+        log.warning("alert POST failed: %s", STATE.alert_error)
+
+
+_last_alert_key: tuple | None = None
+_last_alert_at: float = 0.0
+
+
+# --- replay -----------------------------------------------------------------
+
+REPLAY_UNTIL: float = 0.0
+
+
+async def replay_scenario() -> None:
+    """Drive a synthetic near-miss through the real pipeline.
+
+    A live demo should not depend on Harlem producing a genuine near-miss
+    during the ninety seconds you are on stage. This injects a car closing on
+    a crossing pedestrian and runs it through the same Tracker, the same
+    closest-approach physics, and the same alerting path as live traffic -
+    only the detections are synthetic.
+    """
+    global REPLAY_UNTIL
+    log.info("replay: synthetic near-miss starting")
+    tracker = Tracker()
+    start = time.time()
+    REPLAY_UNTIL = start + 30.0
+
+    async with httpx.AsyncClient() as client:
+        for step in range(10):
+            t = step * 1.6
+            # Car north at 8 m/s; pedestrian east at 1.4 m/s, timed to meet.
+            car = np.array([10.0, 40.0 - 8.0 * t])
+            ped = np.array([4.4 + 1.4 * t, 8.0])
+            now = start + t
+            tracks = tracker.update(
+                [("vehicle", car), ("pedestrian", ped)], now)
+            risk, conflicts = assess(tracks)
+
+            STATE.status = "ACTIVE"
+            STATE.reason = "REPLAY - synthetic scenario, not live traffic"
+            STATE.risk = risk
+            STATE.conflicts = conflicts
+            STATE.counts = {"vehicles": 1, "pedestrians": 1, "detections": 2}
+            STATE.frames += 1
+            STATE.last_ok = time.time()
+            STATE.updated = time.time()
+            REPLAY_UNTIL = time.time() + 4.0
+
+            await emit_alert(client)
+            await asyncio.sleep(1.2)
+
+    REPLAY_UNTIL = 0.0
+    TRACKER.tracks.clear()
+    log.info("replay: finished, returning to live traffic")
 
 
 # --- web -------------------------------------------------------------------
@@ -488,6 +643,21 @@ def healthz():
     """Liveness only. The pipeline degrades to FAIL_SAFE without the container
     being unhealthy - Cloud Run must not restart us for a dark camera."""
     return {"ok": True}
+
+
+@app.post("/api/replay")
+async def api_replay():
+    """Trigger the synthetic near-miss. Safe to hit live during a demo."""
+    if time.time() < REPLAY_UNTIL:
+        return JSONResponse({"ok": False, "error": "replay already running"}, 409)
+    asyncio.create_task(replay_scenario())
+    return {"ok": True, "message": "synthetic near-miss running for ~16s"}
+
+
+@app.get("/api/alert")
+def api_alert():
+    """Exactly what would be POSTed right now - handy for testing the webhook."""
+    return JSONResponse(build_alert())
 
 
 @app.get("/api/state")

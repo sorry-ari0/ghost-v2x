@@ -145,7 +145,42 @@ because it trains operators to ignore the alert.
 Nothing in the loop can raise. The signalling recommendation on failure is
 always "normal fixed timing" - the grid never freezes waiting on this service.
 
-Adversarial scenarios were exercised in **Veris AI** (see `docs/veris-report.png`).
+Adversarial scenarios are exercised by `chaos_test.py`, which drives the real
+`loop()` against a mocked network across nine failures: dark camera, Roboflow
+500, Roboflow timeout, rejected key, frozen feed, list-endpoint outage,
+recovery, and liveness. **9/9 pass.** It is reproducible in 30 seconds rather
+than being a screenshot, and it earned its keep immediately by finding a real
+bug: the frame hash was committed before inference, so a failed inference on a
+static frame was never retried and the system sat stale instead of degrading.
+
+```bash
+python chaos_test.py
+```
+
+## Alerting
+
+Alerts POST on **transitions**, not every frame - a per-frame POST at 1/sec
+floods the events dashboard and buries the alerts that matter. An anti-flap
+floor rate-limits churn, but **escalation bypasses it**: risk climbing toward
+`HIGH` is the one event that must never be delayed.
+
+`UNKNOWN` maps to `No_Action`. When the system cannot see the street it must
+never request an intervention; the grid falls back to normal fixed timing.
+
+A failed webhook POST never stops sensing. It is recorded in `alert_error` and
+the loop keeps polling.
+
+### Demoing without waiting for real traffic
+
+```bash
+curl -X POST https://<your-service>/api/replay
+```
+
+Drives a synthetic car closing on a crossing pedestrian through the **same**
+tracker, physics, and alerting path as live traffic - only the detections are
+synthetic, and the dashboard reason says so. A live demo should not depend on
+Harlem producing a genuine near-miss during the ninety seconds you are on
+stage.
 
 ---
 
@@ -192,6 +227,10 @@ uvicorn main:app --reload
 | `DST_QUAD` | `0,22 18,22 18,0 0,0` | Same 4 points in metres |
 | `TTC_HORIZON_S` | `8.0` | Ignore conflicts further out than this |
 | `MISS_DISTANCE_M` | `2.0` | Proximity that counts as a conflict |
+| `WEBHOOK_URL` | *(unset)* | Where alerts POST; unset disables alerting |
+| `WEBHOOK_AUTH_HEADER` | `Authorization` | Auth header name |
+| `WEBHOOK_AUTH_VALUE` | *(unset)* | Auth header value |
+| `WEBHOOK_MIN_INTERVAL_S` | `3.0` | Anti-flap floor; escalations bypass it |
 
 ---
 
@@ -201,6 +240,8 @@ uvicorn main:app --reload
 |---|---|
 | `/` | Live dashboard, polls every 1.5s |
 | `/api/state` | Full state as JSON |
+| `/api/alert` | Exactly what would be POSTed right now (webhook debugging) |
+| `POST /api/replay` | Trigger the synthetic near-miss - safe to hit live on stage |
 | `/healthz` | Liveness - green even in `FAIL_SAFE` |
 
 ---
