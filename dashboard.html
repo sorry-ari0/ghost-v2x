@@ -1,0 +1,147 @@
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+       background:#0b0e14;color:#c8d0e0;padding:0 2rem 3rem}
+
+  /* Alert rail. Occupies zero space when clear, so its arrival is the signal.
+     grid-template-rows rather than max-height: it animates without forcing
+     layout recalculation, and it sizes to the content, so a long rationale
+     cannot be clipped by a guessed pixel ceiling. */
+  #alert{position:sticky;top:0;z-index:50;margin:0 -2rem 2rem;
+         display:grid;grid-template-rows:0fr;
+         transition:grid-template-rows .18s ease-out}
+  #alert.on{grid-template-rows:1fr}
+  #alert > .bar{overflow:hidden;min-height:0}
+  .bar{padding:1.1rem 2rem 1.3rem;border-bottom:2px solid}
+  #alert:not(.on) > .bar{padding-top:0;padding-bottom:0;border-width:0}
+  .bar.HIGH{background:linear-gradient(180deg,#2a0d12,#1a0a0e);
+            border-color:#ff4d5e}
+  .bar.MEDIUM{background:linear-gradient(180deg,#2a1a0d,#1a120a);
+              border-color:#ff9f45}
+  .siren{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+  .word{font-size:1.5rem;font-weight:700;letter-spacing:.06em}
+  .bar.HIGH .word{color:#ff4d5e}
+  .bar.MEDIUM .word{color:#ff9f45}
+  .where{font-size:1.05rem;color:#e8edf5}
+  .pulse{width:11px;height:11px;border-radius:50%;flex:none;
+         animation:beat 1s ease-in-out infinite}
+  .bar.HIGH .pulse{background:#ff4d5e}
+  .bar.MEDIUM .pulse{background:#ff9f45}
+  @keyframes beat{0%,100%{opacity:1;transform:scale(1)}
+                  50%{opacity:.35;transform:scale(.75)}}
+  .act{margin-top:.7rem;font-size:1.05rem;color:#fff;font-weight:600}
+  .why{margin-top:.3rem;color:#9aa5b8;font-size:.8rem;max-width:76ch}
+  .dispatch{margin-top:.55rem;color:#7d8799;font-size:.76rem}
+
+  h1{font-size:1.1rem;letter-spacing:.14em;text-transform:uppercase;
+     color:#7d8799;margin:2rem 0 .25rem}
+  .sub{color:#5a6373;margin-bottom:2rem}
+  .risk{font-size:3.5rem;font-weight:700;letter-spacing:-.02em;margin:.2rem 0}
+  .CLEAR{color:#3ddc97}.LOW{color:#ffd166}.MEDIUM{color:#ff9f45}
+  .HIGH{color:#ff4d5e}.UNKNOWN{color:#5a6373}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+        gap:1rem;margin:2rem 0}
+  .card{background:#131823;border:1px solid #1f2634;border-radius:10px;
+        padding:1rem}
+  .k{color:#5a6373;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
+  .v{font-size:1.5rem;margin-top:.35rem}
+  table{width:100%;border-collapse:collapse;margin-top:.5rem}
+  th,td{text-align:left;padding:.5rem;border-bottom:1px solid #1f2634}
+  th{color:#5a6373;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+  .pill{display:inline-block;padding:.2rem .6rem;border-radius:99px;
+        font-size:.75rem;border:1px solid #2a3346}
+  a{color:#4de2ff}
+  .nav{margin-top:2.5rem;color:#5a6373;font-size:.8rem}
+</style>
+
+<div id="alert"><div class="bar HIGH" id="bar"></div></div>
+
+<h1>Ghost-V2X</h1>
+<div class="sub">Collision risk from cameras the city already owns.</div>
+<div id="cam" class="pill">connecting…</div>
+<div class="risk UNKNOWN" id="risk">—</div>
+<div class="sub" id="reason"></div>
+
+<div class="grid">
+  <div class="card"><div class="k">Vehicles</div><div class="v" id="veh">—</div></div>
+  <div class="card"><div class="k">Pedestrians</div><div class="v" id="ped">—</div></div>
+  <div class="card"><div class="k">Near-miss / hr</div><div class="v" id="nm">—</div></div>
+  <div class="card"><div class="k">Frames</div><div class="v" id="frames">—</div></div>
+  <div class="card"><div class="k">Frame age</div><div class="v" id="age">—</div></div>
+  <div class="card"><div class="k">Calibration</div><div class="v" id="cal">—</div></div>
+</div>
+
+<table><thead><tr><th>Vehicle</th><th>Pedestrian</th><th>Closest approach</th>
+<th>Miss distance</th></tr></thead>
+<tbody id="rows"><tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr>
+</tbody></table>
+
+<div class="nav">
+  <a href="/map">Risk map</a> ·
+  <a href="/insights">Who this is for</a> ·
+  <a href="/api/state">Raw state</a>
+</div>
+
+<script>
+// Everything below renders third-party camera names, so escape at the boundary.
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const alertEl = document.getElementById('alert');
+const bar = document.getElementById('bar');
+
+function renderAlert(s){
+  const hot = s.risk === 'HIGH' || s.risk === 'MEDIUM';
+  if (!hot){ alertEl.classList.remove('on'); return; }
+
+  const c = s.conflicts && s.conflicts[0];
+  const cam = s.camera || {};
+  bar.className = 'bar ' + s.risk;
+  bar.innerHTML =
+    `<div class="siren">
+       <span class="pulse"></span>
+       <span class="word">${esc(s.risk)} RISK</span>
+       <span class="where">${esc(cam.name || 'unknown location')}</span>
+     </div>
+     <div class="act">${esc(s.recommended_action || '')}</div>` +
+    (s.action_rationale ? `<div class="why">${esc(s.action_rationale)}</div>` : '') +
+    `<div class="dispatch">` +
+      (c ? `closest approach ${esc(c.seconds_to_closest_approach)}s · ` +
+           `miss ${esc(c.miss_distance_m)}m · ` : '') +
+      `${esc(s.counts.vehicles ?? 0)} vehicles, ${esc(s.counts.pedestrians ?? 0)} people in frame` +
+      (cam.lat ? ` · dispatch ${esc(cam.lat)}, ${esc(cam.lon)}` : '') +
+    `</div>`;
+  alertEl.classList.add('on');
+}
+
+async function tick(){
+  let s;
+  try { s = await (await fetch('/api/state')).json(); }
+  catch(e){ return; }                     // keep the last good frame on screen
+
+  const r = document.getElementById('risk');
+  r.textContent = s.risk; r.className = 'risk ' + s.risk;
+  document.getElementById('reason').textContent =
+    s.status === 'ACTIVE' ? '' : s.status + ' — ' + s.reason;
+  document.getElementById('cam').textContent = s.camera?.name ?? 'no camera';
+  document.getElementById('veh').textContent = s.counts.vehicles ?? '—';
+  document.getElementById('ped').textContent = s.counts.pedestrians ?? '—';
+  document.getElementById('nm').textContent = s.near_miss_count ?? '—';
+  document.getElementById('frames').textContent = s.frames;
+  document.getElementById('age').textContent =
+    s.seconds_since_good_frame == null ? '—' : s.seconds_since_good_frame + 's';
+  document.getElementById('cal').textContent =
+    s.scale_error_vs_walking ? s.scale_error_vs_walking + '×' : '—';
+
+  renderAlert(s);
+
+  const rows = document.getElementById('rows');
+  rows.innerHTML = s.conflicts.length ? s.conflicts.map(c =>
+    `<tr><td>#${esc(c.vehicle_track)}</td><td>#${esc(c.pedestrian_track)}</td>
+     <td>${esc(c.seconds_to_closest_approach)}s</td>
+     <td>${esc(c.miss_distance_m)}m</td></tr>`
+  ).join('') : '<tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr>';
+}
+tick(); setInterval(tick, 1500);
+</script>

@@ -948,61 +948,13 @@ def api_state():
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
-    return """<!doctype html><html><head><meta charset="utf-8">
-<title>Ghost-V2X</title><style>
-:root{color-scheme:dark}
-body{margin:0;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
-background:#0b0e14;color:#c8d0e0;padding:2rem}
-h1{font-size:1.1rem;letter-spacing:.14em;text-transform:uppercase;color:#7d8799;margin:0 0 .25rem}
-.sub{color:#5a6373;margin-bottom:2rem}
-.risk{font-size:3.5rem;font-weight:700;letter-spacing:-.02em;margin:.2rem 0}
-.CLEAR{color:#3ddc97}.LOW{color:#ffd166}.MEDIUM{color:#ff9f45}.HIGH{color:#ff4d5e}
-.UNKNOWN{color:#5a6373}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:2rem 0}
-.card{background:#131823;border:1px solid #1f2634;border-radius:10px;padding:1rem}
-.k{color:#5a6373;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
-.v{font-size:1.5rem;margin-top:.35rem}
-table{width:100%;border-collapse:collapse;margin-top:.5rem}
-th,td{text-align:left;padding:.5rem;border-bottom:1px solid #1f2634}
-th{color:#5a6373;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
-.pill{display:inline-block;padding:.2rem .6rem;border-radius:99px;font-size:.75rem;
-border:1px solid #2a3346}
-</style></head><body>
-<h1>Ghost-V2X</h1>
-<div class="sub">Collision risk from cameras the city already owns.</div>
-<div id="cam" class="pill">connecting…</div>
-<div class="risk UNKNOWN" id="risk">-</div>
-<div class="sub" id="reason"></div>
-<div class="grid">
-  <div class="card"><div class="k">Vehicles</div><div class="v" id="veh">-</div></div>
-  <div class="card"><div class="k">Pedestrians</div><div class="v" id="ped">-</div></div>
-  <div class="card"><div class="k">Frames</div><div class="v" id="frames">-</div></div>
-  <div class="card"><div class="k">Frame age</div><div class="v" id="age">-</div></div>
-</div>
-<table><thead><tr><th>Vehicle</th><th>Pedestrian</th><th>Closest approach</th>
-<th>Miss distance</th></tr></thead><tbody id="rows">
-<tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr></tbody></table>
-<script>
-async function tick(){
-  try{
-    const s = await (await fetch('/api/state')).json();
-    const r = document.getElementById('risk');
-    r.textContent = s.risk; r.className = 'risk ' + s.risk;
-    document.getElementById('reason').textContent =
-      s.status === 'ACTIVE' ? '' : s.status + ' - ' + s.reason;
-    document.getElementById('cam').textContent =
-      (s.camera && s.camera.name) ? s.camera.name : 'no camera';
-    document.getElementById('veh').textContent = s.counts.vehicles ?? '-';
-    document.getElementById('ped').textContent = s.counts.pedestrians ?? '-';
-    document.getElementById('frames').textContent = s.frames;
-    document.getElementById('age').textContent =
-      s.seconds_since_good_frame == null ? '-' : s.seconds_since_good_frame + 's';
-    const rows = document.getElementById('rows');
-    rows.innerHTML = s.conflicts.length ? s.conflicts.map(c =>
-      `<tr><td>#${c.vehicle_track}</td><td>#${c.pedestrian_track}</td>
-       <td>${c.seconds_to_closest_approach}s</td><td>${c.miss_distance_m}m</td></tr>`
-    ).join('') : '<tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr>';
-  }catch(e){ /* keep the last good frame on screen */ }
-}
-tick(); setInterval(tick, 1500);
-</script></body></html>"""
+    """Live operator view.
+
+    The alert rail takes zero vertical space until risk is MEDIUM or HIGH, so
+    its arrival is itself the signal - the operator does not have to read
+    anything to know something changed.
+    """
+    path = Path(__file__).parent / "dashboard.html"
+    if not path.exists():
+        return HTMLResponse("<h1>dashboard.html missing</h1>", status_code=500)
+    return HTMLResponse(path.read_text(encoding="utf-8"))
