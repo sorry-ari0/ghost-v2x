@@ -65,6 +65,17 @@ ROBOFLOW_URL = os.getenv("ROBOFLOW_URL", "https://detect.roboflow.com")
 # usual 0.4 threshold discards most of them.
 CONFIDENCE = float(os.getenv("CONFIDENCE", "0.25"))
 ROBOFLOW_OVERLAP = int(os.getenv("ROBOFLOW_OVERLAP", "45"))
+# Upscale before inference. Measured on a live Lenox frame: the raw 352x240
+# image returns ZERO detections, while the same frame at 704x480 returns 40+
+# including 20+ pedestrians. Detectors are trained near 640x640, and a 25px
+# pedestrian falls below what they resolve. Without this the system reports
+# CLEAR forever while appearing perfectly healthy - the worst failure mode
+# there is, because nothing looks broken.
+#
+# Coordinate-safe: Roboflow echoes image_width/image_height for whatever it
+# received, and ground_positions() divides by those, so the normalised
+# fractions the homography consumes are identical either way.
+UPSCALE = float(os.getenv("UPSCALE", "2.0"))
 
 # Closest-point-of-approach thresholds, in real-world units.
 TTC_HORIZON_S = float(os.getenv("TTC_HORIZON_S", "8.0"))
@@ -299,6 +310,25 @@ def camera_image_url(cam: dict) -> str:
     return f"https://webcams.nyctmc.org/api/cameras/{cid}/image"
 
 
+def upscale_jpeg(jpeg: bytes, factor: float) -> bytes:
+    """Enlarge the frame before inference. Returns the original on any failure."""
+    if factor <= 1.0:
+        return jpeg
+    try:
+        from PIL import Image
+        import io
+        img = Image.open(io.BytesIO(jpeg))
+        big = img.resize((round(img.width * factor), round(img.height * factor)),
+                         Image.LANCZOS)
+        buf = io.BytesIO()
+        big.convert("RGB").save(buf, format="JPEG", quality=92)
+        return buf.getvalue()
+    except Exception as exc:
+        # Never let a resize failure stop detection; degraded recall beats none.
+        log.warning("upscale failed, sending original frame: %s", exc)
+        return jpeg
+
+
 async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
     """Run hosted inference on one frame.
 
@@ -315,7 +345,7 @@ async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
             "overlap": ROBOFLOW_OVERLAP,
             "format": "json",
         },
-        content=base64.b64encode(jpeg),
+        content=base64.b64encode(upscale_jpeg(jpeg, UPSCALE)),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=30,
     )
