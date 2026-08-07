@@ -10,6 +10,7 @@ still serves, so the container is always deployable.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -31,14 +32,25 @@ log = logging.getLogger("ghost-v2x")
 
 CAMERA_LIST_URL = os.getenv("CAMERA_LIST_URL", "https://webcams.nyctmc.org/api/cameras/")
 
-# Broadway @ 46 St - Quad South. Chosen by inspecting live frames from eight
-# candidates: it is the only one combining heavy pedestrian volume, vehicle
-# traffic, an elevated angle that actually shows the road surface, and a zebra
-# crosswalk to calibrate against. Highway cameras are useless here - no
-# pedestrians means no vehicle-pedestrian conflict to measure.
-CAMERA_ID = os.getenv("CAMERA_ID", "1927b469-e2dc-4943-a70c-e6e52fd4c48c")
-CAMERA_MATCH = os.getenv("CAMERA_MATCH", "Broadway @ 46 St- Quad South")
-POLL_SECONDS = float(os.getenv("POLL_SECONDS", "2.5"))
+# Lenox Ave @ 125 St, Harlem. Ranked #2 of 619 street-intersection cameras by
+# pedestrians and cyclists injured within 150m since 2021 (98 people, 95
+# crashes) using NYC's own collision record - see rank_cameras.py.
+#
+# Rank alone is not enough, so every top candidate was inspected. #1 Delancy @
+# Essex is a foreshortened view down the roadway with almost no pedestrians
+# visible. #5 Broadway @ 43 St is the Times Square pedestrian plaza: huge foot
+# traffic, essentially no vehicles, so its crashes happen outside the frame.
+# Lenox is the highest-ranked camera that actually shows the conflict it is
+# scored on - pedestrians crossing perpendicular to vehicle flow, over a zebra
+# crosswalk that doubles as the calibration reference.
+CAMERA_ID = os.getenv("CAMERA_ID", "156b0613-239a-4e77-aa0e-0a4becfc0b05")
+CAMERA_MATCH = os.getenv("CAMERA_MATCH", "Lenox Ave @ 125 St")
+
+# Measured: this camera publishes a new frame every ~2.0s (min 1.2, max 2.5).
+# Poll faster than that and dedupe, so a new frame is picked up promptly
+# instead of being missed by an aliased 2.5s cycle. Duplicate frames are
+# discarded before inference - see the hash check in loop().
+POLL_SECONDS = float(os.getenv("POLL_SECONDS", "1.0"))
 
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY", "")
 ROBOFLOW_MODEL = os.getenv("ROBOFLOW_MODEL", "vehicle-detection-3mmwj/1")
@@ -55,12 +67,12 @@ MISS_DISTANCE_M = float(os.getenv("MISS_DISTANCE_M", "2.0"))
 # points in metres on the road surface. The defaults are a placeholder - see
 # calibrate.py. Without a real calibration this is still image space, and two
 # objects fifty feet apart can look like they are touching.
-# Starting estimate for Broadway @ 46 St, read off a live frame: the open
-# roadway carrying the crosswalk, mapped to roughly 15m across (4-5 lanes) by
-# 25m deep. Refine it against scout/00_*.jpg - see calibrate.py. Being within
-# 20% of true scale beats image space by a wide margin.
-SRC_QUAD = os.getenv("SRC_QUAD", "0.32,0.48 0.88,0.45 1.00,0.90 0.20,0.95")
-DST_QUAD = os.getenv("DST_QUAD", "0,25 15,25 15,0 0,0")
+# Starting estimate for Lenox Ave @ 125 St, read off a live frame: the roadway
+# carrying the foreground crosswalk, mapped to roughly 18m across (Lenox is a
+# wide avenue) by 22m deep. This is an eyeball estimate and the single highest
+# leverage thing to refine - use the crosswalk as a ruler, see calibrate.py.
+SRC_QUAD = os.getenv("SRC_QUAD", "0.28,0.60 0.66,0.56 0.78,0.97 0.05,0.93")
+DST_QUAD = os.getenv("DST_QUAD", "0,22 18,22 18,0 0,0")
 
 VEHICLE_CLASSES = {"car", "truck", "bus", "motorbike", "motorcycle", "vehicle", "van"}
 PEDESTRIAN_CLASSES = {"person", "pedestrian", "bicycle", "cyclist"}
@@ -191,6 +203,7 @@ class State:
     conflicts: list[dict] = field(default_factory=list)
     counts: dict[str, int] = field(default_factory=dict)
     frames: int = 0
+    duplicate_frames: int = 0
     errors: int = 0
     consecutive_errors: int = 0
     last_ok: float | None = None
@@ -206,6 +219,7 @@ class State:
             "counts": self.counts,
             "camera": self.camera,
             "frames": self.frames,
+            "duplicate_frames": self.duplicate_frames,
             "errors": self.errors,
             "seconds_since_good_frame": age,
             "updated": self.updated,
@@ -337,6 +351,7 @@ async def loop() -> None:
     """Poll → detect → track → assess. Every failure path degrades, never raises."""
     h_mat = _homography(_parse_quad(SRC_QUAD), _parse_quad(DST_QUAD))
     cam: dict = {}
+    last_frame_hash: bytes | None = None
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
         while True:
@@ -359,6 +374,18 @@ async def loop() -> None:
                 jpeg = r.content
                 if len(jpeg) < 1024:
                     raise RuntimeError(f"frame too small ({len(jpeg)}B) - camera likely dark")
+
+                # Refetching the same frame is not harmless. Identical
+                # detections mean a measured velocity of exactly zero, and the
+                # smoothing would drag every track toward stationary -
+                # systematically under-estimating closing speed and
+                # suppressing real conflicts. Skip before spending inference.
+                digest = hashlib.sha256(jpeg).digest()
+                if digest == last_frame_hash:
+                    STATE.duplicate_frames += 1
+                    await asyncio.sleep(POLL_SECONDS)
+                    continue
+                last_frame_hash = digest
 
                 if not ROBOFLOW_API_KEY:
                     STATE.status = "FAIL_SAFE"

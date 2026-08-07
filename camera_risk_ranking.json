@@ -1,0 +1,902 @@
+[
+ {
+  "id": "1f0cfaad-4c0a-46e8-a5e3-f206d83a875d",
+  "name": "Delancy St @ Essex St",
+  "area": "Manhattan",
+  "latitude": 40.718557,
+  "longitude": -73.988199,
+  "people_injured": 112,
+  "crashes": 110
+ },
+ {
+  "id": "156b0613-239a-4e77-aa0e-0a4becfc0b05",
+  "name": "Lenox Ave @ 125 St",
+  "area": "Manhattan",
+  "latitude": 40.80798,
+  "longitude": -73.945472,
+  "people_injured": 98,
+  "crashes": 95
+ },
+ {
+  "id": "45cb119b-0e4a-442e-9410-b810ab8c255d",
+  "name": "7 Ave @ 43 St",
+  "area": "Manhattan",
+  "latitude": 40.756691,
+  "longitude": -73.986476,
+  "people_injured": 95,
+  "crashes": 88
+ },
+ {
+  "id": "bc2fd2da-1d56-46fa-a1ab-8674fac93877",
+  "name": "7 Ave @ 43 St - 64.186 - PTZ",
+  "area": "Manhattan",
+  "latitude": 40.756707,
+  "longitude": -73.986442,
+  "people_injured": 94,
+  "crashes": 87
+ },
+ {
+  "id": "d8122408-7092-41ba-a9db-ef8847edeaef",
+  "name": "Broadway @ 43 St",
+  "area": "Manhattan",
+  "latitude": 40.756583,
+  "longitude": -73.986156,
+  "people_injured": 94,
+  "crashes": 87
+ },
+ {
+  "id": "a3058350-1552-459f-8379-2fd06895e70a",
+  "name": "Delancey St @ Bowery St ",
+  "area": "Manhattan",
+  "latitude": 40.720317,
+  "longitude": -73.994016,
+  "people_injured": 89,
+  "crashes": 83
+ },
+ {
+  "id": "98b37dd5-bd64-4ace-add0-37f5135df600",
+  "name": "St Nicholas Ave @ 125 St",
+  "area": "Manhattan",
+  "latitude": 40.810767,
+  "longitude": -73.952593,
+  "people_injured": 87,
+  "crashes": 84
+ },
+ {
+  "id": "9565e94d-66f2-4965-9c13-82d5500d6cfd",
+  "name": "Broadway @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7558094297322,
+  "longitude": -73.9864124090652,
+  "people_injured": 87,
+  "crashes": 80
+ },
+ {
+  "id": "e4542be1-fe19-4efa-a25e-0d0c1065c8a2",
+  "name": "58 St @ QBB UL Approach",
+  "area": "Manhattan",
+  "latitude": 40.75959,
+  "longitude": -73.96396,
+  "people_injured": 84,
+  "crashes": 82
+ },
+ {
+  "id": "bca4a4b0-d73f-4937-9301-85ff8293bd94",
+  "name": "7 AVE @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.75609,
+  "longitude": -73.9869,
+  "people_injured": 84,
+  "crashes": 79
+ },
+ {
+  "id": "c61490de-9ab7-4321-919c-cf8ad9ca5100",
+  "name": "2 Ave @ 59 St (QBB)",
+  "area": "Manhattan",
+  "latitude": 40.760978,
+  "longitude": -73.964082,
+  "people_injured": 83,
+  "crashes": 82
+ },
+ {
+  "id": "19789499-03ac-45de-9401-a7a71ea60d1e",
+  "name": "7 AVE @ 44 St",
+  "area": "Manhattan",
+  "latitude": 40.75736,
+  "longitude": -73.986,
+  "people_injured": 82,
+  "crashes": 74
+ },
+ {
+  "id": "5b44d19e-de48-4941-b071-d2a4c08bd230",
+  "name": "2 Ave @ 58 St",
+  "area": "Manhattan",
+  "latitude": 40.759333,
+  "longitude": -73.965302,
+  "people_injured": 80,
+  "crashes": 78
+ },
+ {
+  "id": "d78ebdc6-2211-479e-bda6-59d79db20258",
+  "name": "8 Ave @ 57 St",
+  "area": "Manhattan",
+  "latitude": 40.766796,
+  "longitude": -73.9829,
+  "people_injured": 79,
+  "crashes": 77
+ },
+ {
+  "id": "9d86d84c-6d3a-45a6-a8ad-fb5ab52f2b52",
+  "name": "E 57 St @ QBB",
+  "area": "Manhattan",
+  "latitude": 40.7589949664454,
+  "longitude": -73.9644856628626,
+  "people_injured": 74,
+  "crashes": 72
+ },
+ {
+  "id": "c733e881-862d-4874-9d00-9bfdc3b27cbc",
+  "name": "Grand St @ Bowery",
+  "area": "Manhattan",
+  "latitude": 40.718427,
+  "longitude": -73.99483,
+  "people_injured": 73,
+  "crashes": 69
+ },
+ {
+  "id": "4ebe49c8-3e68-43f7-b415-da3db9f72693",
+  "name": "7 Ave @ 54 St",
+  "area": "Manhattan",
+  "latitude": 40.763617,
+  "longitude": -73.981436,
+  "people_injured": 73,
+  "crashes": 67
+ },
+ {
+  "id": "f6ca5824-45da-48a9-8268-2725eed58b79",
+  "name": "Fordham Rd @  Grand Concourse",
+  "area": "Bronx",
+  "latitude": 40.862444,
+  "longitude": -73.897131,
+  "people_injured": 72,
+  "crashes": 71
+ },
+ {
+  "id": "ae67eb8d-0aed-4204-b7a1-3621ed9eef65",
+  "name": "Tillary St EB @ Jay St",
+  "area": "Brooklyn",
+  "latitude": 40.696002,
+  "longitude": -73.987094,
+  "people_injured": 72,
+  "crashes": 68
+ },
+ {
+  "id": "d7ee32d6-895f-4e37-bdd9-f97b06b24f3d",
+  "name": "Tillary St @ Jay St",
+  "area": "Brooklyn",
+  "latitude": 40.696073,
+  "longitude": -73.987095,
+  "people_injured": 72,
+  "crashes": 68
+ },
+ {
+  "id": "053e8995-f8cb-4d02-a659-70ac7c7da5db",
+  "name": "Broadway @ 45 St",
+  "area": "Manhattan",
+  "latitude": 40.757953,
+  "longitude": -73.98549,
+  "people_injured": 71,
+  "crashes": 66
+ },
+ {
+  "id": "b95471db-03ed-4fc3-9b91-561328029fd4",
+  "name": "Houston St @ Bowery St",
+  "area": "Manhattan",
+  "latitude": 40.724113,
+  "longitude": -73.992623,
+  "people_injured": 70,
+  "crashes": 69
+ },
+ {
+  "id": "23605598-4eb1-46c2-8b80-8a8c124f020a",
+  "name": "Main St @ Roosevelt Ave",
+  "area": "Queens",
+  "latitude": 40.759565,
+  "longitude": -73.830121,
+  "people_injured": 69,
+  "crashes": 68
+ },
+ {
+  "id": "c34ca47e-e375-4b9f-a8d7-f9737566b783",
+  "name": "6 Ave @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7548488195947,
+  "longitude": -73.9841249380499,
+  "people_injured": 69,
+  "crashes": 67
+ },
+ {
+  "id": "ee1b1d85-e8ce-485f-a539-12962933eb9f",
+  "name": "7 Ave @ 34 St",
+  "area": "Manhattan",
+  "latitude": 40.7510195668227,
+  "longitude": -73.9906285955498,
+  "people_injured": 69,
+  "crashes": 64
+ },
+ {
+  "id": "f06979b2-3497-4330-9882-a06c8a442b7c",
+  "name": "6 Ave @ 34 St",
+  "area": "Manhattan",
+  "latitude": 40.749808,
+  "longitude": -73.987746,
+  "people_injured": 69,
+  "crashes": 62
+ },
+ {
+  "id": "8ee72946-49e0-4f49-991d-4f52b1206ed7",
+  "name": "Broadway @ 6 Ave / 33 St",
+  "area": "Manhattan",
+  "latitude": 40.749412,
+  "longitude": -73.98806,
+  "people_injured": 69,
+  "crashes": 62
+ },
+ {
+  "id": "f865d9bf-0062-4d43-9c16-2a862d8af4f0",
+  "name": "9 Ave @ 45 St",
+  "area": "Manhattan",
+  "latitude": 40.760533,
+  "longitude": -73.991205,
+  "people_injured": 68,
+  "crashes": 67
+ },
+ {
+  "id": "0c9a2836-c408-48d3-85c7-1977c33d9133",
+  "name": "Broadway @ 46 St",
+  "area": "Manhattan",
+  "latitude": 40.758741,
+  "longitude": -73.985437,
+  "people_injured": 67,
+  "crashes": 63
+ },
+ {
+  "id": "6fa8acf2-f5bf-4200-afde-1240868ca3e3",
+  "name": "Houston St @ Lafeyette St",
+  "area": "Manhattan",
+  "latitude": 40.725063,
+  "longitude": -73.995413,
+  "people_injured": 66,
+  "crashes": 65
+ },
+ {
+  "id": "1927b469-e2dc-4943-a70c-e6e52fd4c48c",
+  "name": "Broadway @ 46 St- Quad South",
+  "area": "Manhattan",
+  "latitude": 40.758692,
+  "longitude": -73.985371,
+  "people_injured": 66,
+  "crashes": 62
+ },
+ {
+  "id": "8cd15417-5b79-4065-9165-4b6ff0ff3f53",
+  "name": "Broadway @ 46 St- Quad West",
+  "area": "Manhattan",
+  "latitude": 40.75872,
+  "longitude": -73.98539,
+  "people_injured": 66,
+  "crashes": 62
+ },
+ {
+  "id": "76faba94-f9e5-42d7-981e-0cbbbfd4bc21",
+  "name": "Broadway @ 46 Street",
+  "area": "Manhattan",
+  "latitude": 40.758711,
+  "longitude": -73.985366,
+  "people_injured": 66,
+  "crashes": 62
+ },
+ {
+  "id": "dbbf45f6-7d87-46fa-825f-454a7e2bbcad",
+  "name": "Broadway @ 46 St- Quad East",
+  "area": "Manhattan",
+  "latitude": 40.7587,
+  "longitude": -73.985348,
+  "people_injured": 66,
+  "crashes": 62
+ },
+ {
+  "id": "f3d82b25-6b10-44c7-ae89-30df075a7ac8",
+  "name": "Broadway @ 46 St- Quad North",
+  "area": "Manhattan",
+  "latitude": 40.758722,
+  "longitude": -73.98536,
+  "people_injured": 66,
+  "crashes": 62
+ },
+ {
+  "id": "78a5c61d-9dce-4b52-b0da-bf7d22c1f501",
+  "name": "8 Ave @ Columbus Cr South",
+  "area": "Manhattan",
+  "latitude": 40.767775,
+  "longitude": -73.982089,
+  "people_injured": 65,
+  "crashes": 64
+ },
+ {
+  "id": "444aa32f-8102-4ca6-a7f8-5c9fd8fd5571",
+  "name": "Houston St @ Christies St",
+  "area": "Manhattan",
+  "latitude": 40.723591,
+  "longitude": -73.991117,
+  "people_injured": 65,
+  "crashes": 63
+ },
+ {
+  "id": "a249b3ee-bde9-4d6d-9a18-9cd2108d2eb0",
+  "name": "Allen St @ Delancey St (B)",
+  "area": "Manhattan",
+  "latitude": 40.719108,
+  "longitude": -73.99043,
+  "people_injured": 64,
+  "crashes": 61
+ },
+ {
+  "id": "0dc7c2b4-614d-46a3-9610-3ba09f3f1284",
+  "name": "6 Ave @ 30 St",
+  "area": "Manhattan",
+  "latitude": 40.747287,
+  "longitude": -73.989615,
+  "people_injured": 63,
+  "crashes": 62
+ },
+ {
+  "id": "9bb33444-d2ec-47bd-952a-174f87013736",
+  "name": "7 AVE / ADAM CLAYTON POWELL BLVD@ 125 St",
+  "area": "Manhattan",
+  "latitude": 40.80896,
+  "longitude": -73.9483,
+  "people_injured": 63,
+  "crashes": 60
+ },
+ {
+  "id": "d47d2f63-cdc1-4f28-bc4c-e64ac07e4f1d",
+  "name": "Union Sq @ 14 St",
+  "area": "Manhattan",
+  "latitude": 40.73483,
+  "longitude": -73.99087,
+  "people_injured": 62,
+  "crashes": 61
+ },
+ {
+  "id": "5d055599-875a-4010-991f-e7e454889052",
+  "name": "7 Ave @ 40 St",
+  "area": "Manhattan",
+  "latitude": 40.754746,
+  "longitude": -73.987894,
+  "people_injured": 62,
+  "crashes": 57
+ },
+ {
+  "id": "36b00c79-b2a0-49d3-800a-42b7db1847a8",
+  "name": "Jamaica Ave @ Sutphin Blvd",
+  "area": "Queens",
+  "latitude": 40.701756,
+  "longitude": -73.80795,
+  "people_injured": 60,
+  "crashes": 58
+ },
+ {
+  "id": "fcc24aa5-4da0-48f2-aa43-e70e4677517c",
+  "name": "6 Ave @ 23 St",
+  "area": "Manhattan",
+  "latitude": 40.7429025573452,
+  "longitude": -73.992797766009,
+  "people_injured": 60,
+  "crashes": 56
+ },
+ {
+  "id": "ec9ffb62-e3bf-4352-8bcf-7c9adf5fbe9c",
+  "name": "8th Ave @ 31st St",
+  "area": "Manhattan",
+  "latitude": 40.750297,
+  "longitude": -73.99483,
+  "people_injured": 60,
+  "crashes": 53
+ },
+ {
+  "id": "243e945a-b872-4bac-9898-94ce8963ef44",
+  "name": "Flatbush Ave @ DeKalb Ave",
+  "area": "Brooklyn",
+  "latitude": 40.689993,
+  "longitude": -73.98163,
+  "people_injured": 59,
+  "crashes": 59
+ },
+ {
+  "id": "83bf2591-579d-415b-a0d4-fe39868b46d1",
+  "name": "8 Ave @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7572405048358,
+  "longitude": -73.9897804546602,
+  "people_injured": 59,
+  "crashes": 58
+ },
+ {
+  "id": "ccd1abb9-0683-4d93-a62f-b2b121612d28",
+  "name": "9 Ave @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7584430039686,
+  "longitude": -73.9926394975013,
+  "people_injured": 59,
+  "crashes": 56
+ },
+ {
+  "id": "cda76289-afd2-498e-a0e9-420a1854c38a",
+  "name": "Flatbush Ave @ Fulton St",
+  "area": "Brooklyn",
+  "latitude": 40.6880253424274,
+  "longitude": -73.9803886413574,
+  "people_injured": 58,
+  "crashes": 58
+ },
+ {
+  "id": "5a9ebe48-fb36-4de7-8666-f50de83c7941",
+  "name": "Flatbush Ave @ Nostrand Ave",
+  "area": "Brooklyn",
+  "latitude": 40.632889,
+  "longitude": -73.947672,
+  "people_injured": 58,
+  "crashes": 57
+ },
+ {
+  "id": "053afe02-e1b3-4bea-9995-787e72c7fff4",
+  "name": "Atlantic Ave @ Barclays Center",
+  "area": "Brooklyn",
+  "latitude": 40.683572,
+  "longitude": -73.976083,
+  "people_injured": 58,
+  "crashes": 54
+ },
+ {
+  "id": "5bd248b9-1dab-4118-b4b2-d3ef3fbd7085",
+  "name": "Adams St @ Tillary St",
+  "area": "Brooklyn",
+  "latitude": 40.696346,
+  "longitude": -73.988845,
+  "people_injured": 57,
+  "crashes": 54
+ },
+ {
+  "id": "fc7db899-7a79-41f3-b9b1-b23ce64c5a5e",
+  "name": "7 Ave @ 49 St",
+  "area": "Manhattan",
+  "latitude": 40.7604823513464,
+  "longitude": -73.983738054794,
+  "people_injured": 57,
+  "crashes": 54
+ },
+ {
+  "id": "96be7098-dda4-42da-bfe2-55bc5c6b94fb",
+  "name": "Baxter St @ Canal Street",
+  "area": "Manhattan",
+  "latitude": 40.7175537302479,
+  "longitude": -73.999310720446,
+  "people_injured": 56,
+  "crashes": 54
+ },
+ {
+  "id": "3d8e276f-b179-414d-a506-679d5e559d3e",
+  "name": "Broadway @ 51 St",
+  "area": "Manhattan",
+  "latitude": 40.762077539856,
+  "longitude": -73.9836422756604,
+  "people_injured": 56,
+  "crashes": 50
+ },
+ {
+  "id": "1dddf912-4718-4b2a-94dd-1f793a9ed22c",
+  "name": "6 Ave @ 49 St",
+  "area": "Manhattan",
+  "latitude": 40.759281077223,
+  "longitude": -73.9808977882913,
+  "people_injured": 55,
+  "crashes": 53
+ },
+ {
+  "id": "4850e464-1111-4b5d-a72d-f54a0e12a789",
+  "name": "8 Ave @ 49 St",
+  "area": "Manhattan",
+  "latitude": 40.761676,
+  "longitude": -73.986581,
+  "people_injured": 54,
+  "crashes": 53
+ },
+ {
+  "id": "cd229284-a743-4ac4-9430-366f11e68d6c",
+  "name": "Irving Pl @ 14 St",
+  "area": "Manhattan",
+  "latitude": 40.733984,
+  "longitude": -73.988693,
+  "people_injured": 54,
+  "crashes": 53
+ },
+ {
+  "id": "6fc602cf-72c5-40cc-9a42-9a844de7bc1a",
+  "name": "Grand St @ Essex St",
+  "area": "Manhattan",
+  "latitude": 40.716723,
+  "longitude": -73.989158,
+  "people_injured": 54,
+  "crashes": 53
+ },
+ {
+  "id": "f2964d50-042c-4021-8b52-992c08c6ff6f",
+  "name": "8 Ave @ 34 St",
+  "area": "Manhattan",
+  "latitude": 40.7521973661027,
+  "longitude": -73.9934562042021,
+  "people_injured": 54,
+  "crashes": 52
+ },
+ {
+  "id": "61890a52-c90e-41a1-b032-d5c6f39746d9",
+  "name": "7 Ave @ 145 St",
+  "area": "Manhattan",
+  "latitude": 40.821639,
+  "longitude": -73.939078,
+  "people_injured": 54,
+  "crashes": 51
+ },
+ {
+  "id": "79e4e388-89f4-49ed-880f-390bb2b76651",
+  "name": "QBB SOR @ 1 Ave",
+  "area": "Manhattan",
+  "latitude": 40.76006,
+  "longitude": -73.96167,
+  "people_injured": 53,
+  "crashes": 53
+ },
+ {
+  "id": "a9979a0c-71f2-4f5e-a87c-4d29c1104d5c",
+  "name": "WBB-6 North Rdwy @ Delancey St & Clinton St",
+  "area": "Manhattan",
+  "latitude": 40.717805,
+  "longitude": -73.985691,
+  "people_injured": 53,
+  "crashes": 50
+ },
+ {
+  "id": "5c505897-b475-4359-897d-b064bdb9feef",
+  "name": "8 AVE @ 44 St",
+  "area": "Manhattan",
+  "latitude": 40.75851,
+  "longitude": -73.9888,
+  "people_injured": 52,
+  "crashes": 51
+ },
+ {
+  "id": "98c2de4e-fa0c-41d0-b1ea-6d1df833d792",
+  "name": "Allan St (1 Ave) @ Houston St (B)",
+  "area": "Manhattan",
+  "latitude": 40.72289,
+  "longitude": -73.988622,
+  "people_injured": 52,
+  "crashes": 51
+ },
+ {
+  "id": "b0cbb042-de0a-449f-b5d1-49f68a9bf2ae",
+  "name": "7 Ave @ 36 St",
+  "area": "Manhattan",
+  "latitude": 40.752128,
+  "longitude": -73.989657,
+  "people_injured": 52,
+  "crashes": 51
+ },
+ {
+  "id": "c0f05969-abc6-4fa6-b317-3e6ba03e989a",
+  "name": "Dyer Ave @ W 41 St",
+  "area": "Manhattan",
+  "latitude": 40.7584,
+  "longitude": -73.9944,
+  "people_injured": 52,
+  "crashes": 50
+ },
+ {
+  "id": "5214cfe8-ccfc-42e9-8e2a-ff2865c1a518",
+  "name": "Houston St @ Broadway",
+  "area": "Manhattan",
+  "latitude": 40.725458,
+  "longitude": -73.996756,
+  "people_injured": 51,
+  "crashes": 50
+ },
+ {
+  "id": "175cc1f1-0543-41c9-85fb-464ec29687de",
+  "name": "Park Ave @ E 116 Street",
+  "area": "Manhattan",
+  "latitude": 40.799265,
+  "longitude": -73.94294,
+  "people_injured": 51,
+  "crashes": 49
+ },
+ {
+  "id": "1e60ade7-c760-48cf-acd9-d9d6cbfa9420",
+  "name": "7 Ave @ 32 St",
+  "area": "Manhattan",
+  "latitude": 40.749508,
+  "longitude": -73.991493,
+  "people_injured": 51,
+  "crashes": 45
+ },
+ {
+  "id": "769a2e94-5bbc-4a03-86a7-39d3a70213f7",
+  "name": "Broadway @ 96 St",
+  "area": "Manhattan",
+  "latitude": 40.794668,
+  "longitude": -73.971788,
+  "people_injured": 50,
+  "crashes": 50
+ },
+ {
+  "id": "3ad126cc-3f99-4626-a229-b9ba4d3f4b63",
+  "name": "St Nicholas Ave @ 181 St",
+  "area": "Manhattan",
+  "latitude": 40.849314,
+  "longitude": -73.933739,
+  "people_injured": 50,
+  "crashes": 49
+ },
+ {
+  "id": "5cc1f365-af4a-48be-8819-8f12e18725a3",
+  "name": "4 Ave @ 38 st - 179.90",
+  "area": "Brooklyn",
+  "latitude": 40.653191,
+  "longitude": -74.005389,
+  "people_injured": 50,
+  "crashes": 49
+ },
+ {
+  "id": "b331d9d1-c081-4476-8302-83445ac196e7",
+  "name": "Dyer Ave @ 42 Street",
+  "area": "Manhattan",
+  "latitude": 40.7589811180163,
+  "longitude": -73.9939438000961,
+  "people_injured": 50,
+  "crashes": 48
+ },
+ {
+  "id": "7374a49f-373d-479a-b630-52bd07639260",
+  "name": "Roosevelt Ave @ Elmhurst Ave",
+  "area": "Queens",
+  "latitude": 40.748456,
+  "longitude": -73.876234,
+  "people_injured": 50,
+  "crashes": 47
+ },
+ {
+  "id": "8cc75cbc-e050-4947-aee8-639f63fe4ca7",
+  "name": "Canal Street @ Chrystie Street",
+  "area": "Manhattan",
+  "latitude": 40.715821,
+  "longitude": -73.994913,
+  "people_injured": 50,
+  "crashes": 46
+ },
+ {
+  "id": "09b1235e-d2d1-4451-83a5-5a1c3ec280aa",
+  "name": "St Nicholas Ave @ 145 St",
+  "area": "Manhattan",
+  "latitude": 40.824031,
+  "longitude": -73.94477,
+  "people_injured": 49,
+  "crashes": 49
+ },
+ {
+  "id": "a6bd09c7-9195-4e0b-ac0f-78114a7d63a1",
+  "name": "Park Ave @ E 125 St",
+  "area": "Manhattan",
+  "latitude": 40.805313,
+  "longitude": -73.93924,
+  "people_injured": 49,
+  "crashes": 48
+ },
+ {
+  "id": "c880d0c4-db84-44c2-9f00-62f21a83b5d0",
+  "name": "Broadway @ Columbus Circle",
+  "area": "Manhattan",
+  "latitude": 40.768532,
+  "longitude": -73.98209,
+  "people_injured": 49,
+  "crashes": 48
+ },
+ {
+  "id": "b5cf34ce-697e-42a1-b22f-8eb2c1f3e79e",
+  "name": "1 Ave @ E. Houston St",
+  "area": "Manhattan",
+  "latitude": 40.723043,
+  "longitude": -73.988592,
+  "people_injured": 49,
+  "crashes": 48
+ },
+ {
+  "id": "4f3f56e3-f68e-4b60-a4ba-153ecb9094f7",
+  "name": "6 AVE @ 50 St",
+  "area": "Manhattan",
+  "latitude": 40.75994,
+  "longitude": -73.9805,
+  "people_injured": 49,
+  "crashes": 47
+ },
+ {
+  "id": "62b3062d-542f-40f1-86ec-206710e789b6",
+  "name": "3 Ave @ 57 St",
+  "area": "Manhattan",
+  "latitude": 40.760252895987,
+  "longitude": -73.967542473241,
+  "people_injured": 49,
+  "crashes": 47
+ },
+ {
+  "id": "2334b7bd-a237-4bf5-9224-5241bd4ee29e",
+  "name": "WBB-6 South Rdwy @ Delancy St and Clinton St",
+  "area": "Manhattan",
+  "latitude": 40.717622,
+  "longitude": -73.985843,
+  "people_injured": 49,
+  "crashes": 46
+ },
+ {
+  "id": "7f865d20-e4f4-4f7c-88db-c0edf88a9501",
+  "name": "Broadway @ 145 St",
+  "area": "Manhattan",
+  "latitude": 40.826446,
+  "longitude": -73.950423,
+  "people_injured": 49,
+  "crashes": 44
+ },
+ {
+  "id": "3486cafa-aab2-418a-baa4-89dcc438e8c9",
+  "name": "5 Ave @ 23 St",
+  "area": "Manhattan",
+  "latitude": 40.7415700588724,
+  "longitude": -73.9895780597063,
+  "people_injured": 48,
+  "crashes": 46
+ },
+ {
+  "id": "05468f62-4092-4ff5-9bb6-0f70e56ff544",
+  "name": "2 Ave @ 49 St",
+  "area": "Manhattan",
+  "latitude": 40.75426,
+  "longitude": -73.968991,
+  "people_injured": 48,
+  "crashes": 43
+ },
+ {
+  "id": "1546f761-039c-4b5c-af5e-75c83c9f603f",
+  "name": "Lexington Ave @ 42 St",
+  "area": "Manhattan",
+  "latitude": 40.7514494972593,
+  "longitude": -73.976060779701,
+  "people_injured": 48,
+  "crashes": 40
+ },
+ {
+  "id": "c173fe45-9067-4582-81ef-cab0aad56afd",
+  "name": "Grand St (Borinquen PL) @ South 4 St",
+  "area": "Brooklyn",
+  "latitude": 40.710405,
+  "longitude": -73.958276,
+  "people_injured": 47,
+  "crashes": 46
+ },
+ {
+  "id": "d8e022cc-c262-45ac-a939-8e86e20853fd",
+  "name": "Ft Washington @ 178 St",
+  "area": "Manhattan",
+  "latitude": 40.848657,
+  "longitude": -73.939207,
+  "people_injured": 47,
+  "crashes": 46
+ },
+ {
+  "id": "ebac5b6e-bd3a-4046-926b-7446edab9bee",
+  "name": "3 Ave @ E 14 St",
+  "area": "Manhattan",
+  "latitude": 40.733316,
+  "longitude": -73.987185,
+  "people_injured": 47,
+  "crashes": 45
+ },
+ {
+  "id": "a4c12003-9638-473d-bfe3-dddf509c80b8",
+  "name": "6 Ave @ 58 St",
+  "area": "Manhattan",
+  "latitude": 40.765024,
+  "longitude": -73.976689,
+  "people_injured": 47,
+  "crashes": 44
+ },
+ {
+  "id": "0cef143f-b3d8-4066-84ee-6114fa6e76e0",
+  "name": "Lexington Ave @ E 110 Street",
+  "area": "Manhattan",
+  "latitude": 40.795015,
+  "longitude": -73.944542,
+  "people_injured": 46,
+  "crashes": 46
+ },
+ {
+  "id": "3546896d-d4c6-4966-8a43-2fe62e26526f",
+  "name": "E 8 St @ Lafayette St",
+  "area": "Manhattan",
+  "latitude": 40.730175,
+  "longitude": -73.991076,
+  "people_injured": 46,
+  "crashes": 44
+ },
+ {
+  "id": "63bf5db0-582d-4482-ad51-52338c7f9906",
+  "name": "3 Ave @ 14 St",
+  "area": "Manhattan",
+  "latitude": 40.733275,
+  "longitude": -73.987279,
+  "people_injured": 46,
+  "crashes": 44
+ },
+ {
+  "id": "9aeb8a21-e4be-459a-ac9c-9ac282f0f929",
+  "name": "1 Avenue @ East 60 Street",
+  "area": "Manhattan",
+  "latitude": 40.760204,
+  "longitude": -73.961502,
+  "people_injured": 45,
+  "crashes": 45
+ },
+ {
+  "id": "a6811e67-15ac-4289-97be-9c6dd1ae1c75",
+  "name": "QBB NOR @ 1 Ave",
+  "area": "Manhattan",
+  "latitude": 40.760158,
+  "longitude": -73.961567,
+  "people_injured": 45,
+  "crashes": 45
+ },
+ {
+  "id": "9cc8495e-aeee-4759-adba-5a6bf5efd4b9",
+  "name": "3 Ave @ 23 St",
+  "area": "Manhattan",
+  "latitude": 40.7388335617157,
+  "longitude": -73.9831563349364,
+  "people_injured": 45,
+  "crashes": 44
+ },
+ {
+  "id": "aa85b894-336d-42bb-9801-0359e452f845",
+  "name": "1 Ave @ 62 St",
+  "area": "Manhattan",
+  "latitude": 40.761501,
+  "longitude": -73.960542,
+  "people_injured": 45,
+  "crashes": 44
+ },
+ {
+  "id": "7609996b-ec61-4c06-bb58-c9aa93c65b80",
+  "name": "Grand St @ Graham Ave",
+  "area": "Brooklyn",
+  "latitude": 40.711646,
+  "longitude": -73.943913,
+  "people_injured": 45,
+  "crashes": 43
+ },
+ {
+  "id": "48cd1b5b-f361-4683-9d83-492d4789d7ea",
+  "name": "Grand St @ Allen St",
+  "area": "Manhattan",
+  "latitude": 40.717382,
+  "longitude": -73.991308,
+  "people_injured": 45,
+  "crashes": 43
+ }
+]

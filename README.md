@@ -30,11 +30,12 @@ config change, not a procurement cycle.
 ```mermaid
 flowchart LR
   subgraph NYC["NYC Open Data"]
-    A["NYCTMC camera API<br/>970+ cameras"]
+    A["NYCTMC camera API<br/>968 cameras"]
+    A2["Motor Vehicle Collisions<br/>h9gi-nx95"]
   end
 
   subgraph CR["Google Cloud Run"]
-    B["Frame poller<br/>~2.5s cadence"]
+    B["Frame poller<br/>1.0s, hash-deduped"]
     C["Ground-plane projection<br/>homography"]
     D["Tracker<br/>nearest-neighbour"]
     E["Closest-point-of-approach<br/>physics"]
@@ -50,6 +51,7 @@ flowchart LR
   end
 
   A -->|JPEG frame| B
+  A2 -.->|ranks cameras by<br/>injuries within 150m| A
   B -->|frame bytes| G
   G -->|predictions JSON| C
   C --> D --> E --> F
@@ -65,25 +67,39 @@ brain, not the eyes.
 ## Choosing the camera
 
 Not every camera can support this. Of 968 in the NYCTMC network (965 online),
-only ~619 are street intersections at all; the rest are expressways, bridges,
-and tunnels where there are no pedestrians and therefore no vehicle-pedestrian
-conflict to measure.
+only ~619 are street intersections; the rest are expressways, bridges, and
+tunnels where there are no pedestrians and so no conflict to measure.
 
-`scout_cameras.py` filters the roster and pulls candidate frames to inspect.
-The default is **Broadway @ 46 St - Quad South**
-(`1927b469-e2dc-4943-a70c-e6e52fd4c48c`), picked by looking at eight live
-frames. It is the only candidate combining all four requirements:
+Picking one by eye finds somewhere that *looks* busy. `rank_cameras.py` instead
+scores every camera against **NYC's own collision record** (Socrata
+`h9gi-nx95`): 69,090 crashes that injured a pedestrian or cyclist since 2021,
+matched to cameras within 150m.
 
-1. heavy pedestrian volume (Times Square);
-2. active vehicle traffic;
-3. an elevated angle that actually shows the road surface, rather than a
-   foreshortened view straight down the roadway;
-4. a zebra crosswalk, whose real-world dimensions calibrate the ground plane.
+But rank alone picks the wrong camera, and only looking at the frames shows why:
 
-Frames are **352x240**, so a mid-ground pedestrian is roughly 25px tall. That
-is why the confidence threshold defaults to 0.25 rather than the usual 0.4.
+| Rank | Camera | Hurt | Why it fails or works |
+|---:|---|---:|---|
+| 1 | Delancy St @ Essex St | 112 | Foreshortened view straight down the roadway; almost no pedestrians visible, badly conditioned homography |
+| 2 | **Lenox Ave @ 125 St** | **98** | **Selected.** Crosswalk in frame, pedestrians crossing perpendicular to vehicle flow, elevated angle, moderate density |
+| 3 | 7 Ave @ 43 St | 95 | Good angle and traffic, but pedestrians run parallel on sidewalks rather than crossing |
+| 5 | Broadway @ 43 St | 94 | Times Square **pedestrian plaza** - huge foot traffic, no vehicles. Its crashes happen outside the frame |
+
+Proximity to crashes is not the same as seeing them. The default is
+**Lenox Ave @ 125 St** (`156b0613-239a-4e77-aa0e-0a4becfc0b05`): the
+highest-ranked camera that actually shows the conflict it is scored on.
+
+Times Square was rejected for a second reason that only appears on inspection.
+Its pedestrian density is so high that greedy nearest-neighbour association
+would throw ID switches constantly. Lenox has enough pedestrians for real
+conflicts and few enough to track reliably.
+
+Frames are **352x240**, so a mid-ground pedestrian is roughly 25px tall - hence
+a confidence threshold of 0.25 rather than the usual 0.4. The camera publishes
+a new frame every **~2.0s** (measured; min 1.2, max 2.5), so the app polls at
+1.0s and discards duplicates by hash before spending inference on them.
 
 ---
+
 
 ## The part most teams get wrong
 
@@ -166,14 +182,14 @@ uvicorn main:app --reload
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `CAMERA_ID` | `1927b469…` (Bway @ 46) | Pin an exact camera; wins over `CAMERA_MATCH` |
-| `CAMERA_MATCH` | `Broadway @ 46 St- Quad South` | Substring match on camera name |
-| `POLL_SECONDS` | `2.5` | Frame cadence |
+| `CAMERA_ID` | `156b0613…` (Lenox @ 125) | Pin an exact camera; wins over `CAMERA_MATCH` |
+| `CAMERA_MATCH` | `Lenox Ave @ 125 St` | Substring match on camera name |
+| `POLL_SECONDS` | `1.0` | Poll cadence; camera refreshes ~2.0s, dupes discarded |
 | `ROBOFLOW_API_KEY` | *(unset)* | Without it, boots to `FAIL_SAFE` |
 | `ROBOFLOW_MODEL` | `vehicle-detection-3mmwj/1` | `model-slug/version` |
 | `CONFIDENCE` | `0.25` | Detection threshold (frames are only 352x240) |
-| `SRC_QUAD` | *placeholder* | 4 image points, fractions of w,h |
-| `DST_QUAD` | *placeholder* | Same 4 points in metres |
+| `SRC_QUAD` | Lenox estimate | 4 road-surface points, fractions of w,h |
+| `DST_QUAD` | `0,22 18,22 18,0 0,0` | Same 4 points in metres |
 | `TTC_HORIZON_S` | `8.0` | Ignore conflicts further out than this |
 | `MISS_DISTANCE_M` | `2.0` | Proximity that counts as a conflict |
 
@@ -212,5 +228,5 @@ stops being trustworthy.
 
 ## Stack
 
-NYC Open Data (NYCTMC) | Google Cloud Run | Roboflow Hosted Inference |
-Veris AI | FastAPI | NumPy
+NYC Open Data (NYCTMC cameras + Motor Vehicle Collisions) | Google Cloud Run |
+Roboflow Hosted Inference | Veris AI | FastAPI | NumPy
