@@ -6,6 +6,27 @@ Ghost-V2X turns the existing NYC DOT traffic camera network into a
 vehicle-pedestrian conflict detector. No new hardware, no new permits, no
 capital expense. Point it at a camera ID and it starts predicting.
 
+### Try it right now
+
+| | |
+|---|---|
+| **Risk map** | https://ghost-v2x-73791867861.us-east1.run.app/map |
+| **Who it's for** | https://ghost-v2x-73791867861.us-east1.run.app/insights |
+| **Live sensor** | https://ghost-v2x-73791867861.us-east1.run.app/ |
+| **Signal controller** | https://ghost-v2x-receiver-73791867861.us-east1.run.app/ |
+
+Force a near-miss through the real tracker, physics, and alerting - no waiting
+for traffic to cooperate:
+
+```bash
+curl -s -X POST -d '' https://ghost-v2x-73791867861.us-east1.run.app/api/replay
+```
+
+Then watch it reach the signal controller. The `-d ''` is required; a bodyless
+POST gets a 411 from Google's frontend.
+
+---
+
 The name: V2X (vehicle-to-everything) safety systems normally require
 transponders in every car and sensor masts on every corner. Ghost-V2X gets a
 useful fraction of the same signal from infrastructure that is already
@@ -185,6 +206,38 @@ surveyed road features, not more code.
 
 ---
 
+## When to warn, and when to shut up
+
+This is the part that inverted once we worked the numbers.
+
+At a 25mph limit a driver needs **2.7s** to perceive, react and stop (1.5s
+perception-reaction, 13.9m braking). Detection latency here is **2.9s**, mostly
+the camera's 2-second refresh. So a warning aimed at a *person* only helps if
+the conflict is seen more than **5.6s** out.
+
+The original design did the opposite - warned humans at 3-5s, when they
+physically cannot use it, and held the signal below 3s, when that is too late
+too.
+
+| Time to conflict | Action | Why |
+|---|---|---|
+| >= 5.6s | `Activate_LED_Crosswalk` | Enough time for a human to act |
+| 2.9-5.6s | `Extend_All_Red_5s` | Too late for a person; the signal needs nobody to react |
+| < 2.9s | `Log_Only` | Inside the reaction floor |
+
+**That last row is the point.** Warning someone with less time than they need
+is not merely useless: a startled pedestrian mid-crossing may freeze rather
+than clear, and a driver who flinches may swerve. Below the floor the system
+records the event and stays silent.
+
+Modality follows the same principle - direct attention, do not demand
+interpretation. In-pavement LEDs light the crosswalk itself, so the eye goes
+where it should already be, in peripheral vision, with nothing to read. Not
+audible alarms, which startle and miss anyone in headphones. Not phone alerts,
+since looking at a phone is the failure being addressed.
+
+---
+
 ## Fail-safe behaviour
 
 The system's job is to **stop asserting things about the street** the moment it
@@ -297,8 +350,12 @@ uvicorn main:app --reload
 
 | Route | Purpose |
 |---|---|
+| `/map` | Risk map: crash history, live status, near-miss signal |
+| `/insights` | Three audiences: EMS, DOT, and the uncomfortable one |
 | `/` | Live dashboard, polls every 1.5s |
-| `/api/state` | Full state as JSON |
+| `/api/state` | Full state as JSON, including its own calibration error |
+| `/api/map-data` | Cameras ranked by injury, plus live status |
+| `/api/insights` | Per-intersection interventions from NYPD factors |
 | `/api/alert` | Exactly what would be POSTed right now (webhook debugging) |
 | `POST /api/replay` | Trigger the synthetic near-miss - safe to hit live on stage |
 | `/healthz` | Liveness - green even in `FAIL_SAFE` |
