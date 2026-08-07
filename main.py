@@ -261,6 +261,7 @@ class State:
     frames: int = 0
     duplicate_frames: int = 0
     median_ped_speed: float | None = None
+    near_misses: list = field(default_factory=list)
     alerts_sent: int = 0
     alert_error: str = ""
     errors: int = 0
@@ -279,6 +280,7 @@ class State:
             "camera": self.camera,
             "frames": self.frames,
             "duplicate_frames": self.duplicate_frames,
+            "near_miss_count": len(self.near_misses),
             "median_ped_speed_mps": self.median_ped_speed,
             "scale_error_vs_walking": (
                 round(self.median_ped_speed / 1.4, 2)
@@ -290,6 +292,13 @@ class State:
             "updated": self.updated,
         }
 
+
+def _scale_error_value(self):
+    return (round(self.median_ped_speed / 1.4, 2)
+            if self.median_ped_speed else None)
+
+
+State.scale_error_value = _scale_error_value
 
 STATE = State()
 TRACKER = Tracker()
@@ -570,6 +579,15 @@ async def loop() -> None:
                 STATE.reason = "ok"
                 STATE.risk = risk
                 STATE.conflicts = conflicts
+                if risk in ("HIGH", "MEDIUM") and conflicts:
+                    STATE.near_misses.append({
+                        "at": now,
+                        "risk": risk,
+                        "ttc": conflicts[0]["seconds_to_closest_approach"],
+                        "miss_m": conflicts[0]["miss_distance_m"],
+                    })
+                    # Bounded; this is a live signal, not an archive.
+                    del STATE.near_misses[:-200]
                 STATE.counts = {
                     "vehicles": sum(1 for t in tracks if t.kind == "vehicle"),
                     "pedestrians": sum(1 for t in tracks if t.kind == "pedestrian"),
@@ -780,6 +798,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Ghost-V2X", lifespan=lifespan)
 
+_static = Path(__file__).parent / "static"
+if _static.exists():
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/static", StaticFiles(directory=str(_static)), name="static")
+
 
 @app.get("/healthz")
 def healthz():
@@ -801,6 +824,64 @@ async def api_replay():
 def api_alert():
     """Exactly what would be POSTed right now - handy for testing the webhook."""
     return JSONResponse(build_alert())
+
+
+@app.get("/map", response_class=HTMLResponse)
+def map_page():
+    """Risk map: crash history, live status, and the near-miss signal."""
+    path = Path(__file__).parent / "map.html"
+    if not path.exists():
+        return HTMLResponse("<h1>map.html missing</h1>", status_code=500)
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
+@app.get("/api/map-data")
+def api_map_data():
+    """Everything the map needs: history, live status, and the leading signal.
+
+    Three layers, deliberately distinct:
+      - `injured`  historical harm from NYC's crash record. Lagging.
+      - `live`     what the sensor sees right now at the monitored camera.
+      - `near_misses` conflicts observed without a crash. Leading.
+
+    An intersection with few recorded crashes but a rising near-miss count is
+    where the next one happens, and that is the layer only live detection can
+    produce.
+    """
+    ranked = []
+    path = Path(__file__).parent / "camera_risk_ranking.json"
+    if path.exists():
+        try:
+            ranked = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            log.warning("could not read ranking: %s", exc)
+
+    now = time.time()
+    recent = [n for n in STATE.near_misses if now - n["at"] <= 3600]
+    return JSONResponse({
+        "monitored_camera_id": STATE.camera.get("id"),
+        "live": {
+            "status": STATE.status,
+            "risk": STATE.risk,
+            "camera": STATE.camera.get("name"),
+            "vehicles": STATE.counts.get("vehicles", 0),
+            "pedestrians": STATE.counts.get("pedestrians", 0),
+            "conflicts": STATE.conflicts,
+            "near_miss_last_hour": len(recent),
+            "near_miss_total": len(STATE.near_misses),
+            "scale_error": STATE.scale_error_value(),
+        },
+        "near_misses": recent[-40:],
+        "cameras": [
+            {
+                "id": c["id"], "name": c["name"], "area": c.get("area"),
+                "lat": float(c["latitude"]), "lon": float(c["longitude"]),
+                "injured": c["people_injured"], "crashes": c["crashes"],
+            }
+            for c in ranked
+            if c.get("latitude") and c.get("longitude")
+        ],
+    })
 
 
 @app.get("/api/state")

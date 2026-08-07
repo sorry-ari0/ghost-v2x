@@ -1,0 +1,155 @@
+<link rel="stylesheet" href="/static/leaflet.css"/>
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+       background:#0b0e14;color:#c8d0e0;overflow:hidden}
+  #map{position:absolute;inset:0}
+  .panel{position:absolute;z-index:1000;background:rgba(13,17,25,.94);
+         border:1px solid #1f2634;border-radius:10px;padding:1rem 1.1rem;
+         backdrop-filter:blur(8px)}
+  #hud{top:1rem;left:1rem;width:290px}
+  #legend{bottom:1rem;left:1rem;width:290px}
+  h1{font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;
+     color:#7d8799;margin:0 0 .15rem}
+  .sub{color:#5a6373;font-size:.74rem;margin-bottom:.9rem}
+  .risk{font-size:2.4rem;font-weight:700;letter-spacing:-.02em;margin:.1rem 0}
+  .CLEAR{color:#3ddc97}.LOW{color:#ffd166}.MEDIUM{color:#ff9f45}
+  .HIGH{color:#ff4d5e}.UNKNOWN{color:#5a6373}
+  .row{display:flex;justify-content:space-between;padding:.28rem 0;
+       border-bottom:1px solid #161c28;font-size:.78rem}
+  .row:last-child{border:0}
+  .k{color:#5a6373}
+  .v{color:#c8d0e0}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:50%;
+          margin-right:.5rem;vertical-align:-1px}
+  .note{color:#5a6373;font-size:.7rem;line-height:1.45;margin-top:.7rem}
+  .alarm{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{
+    background:#131823;color:#c8d0e0;border:1px solid #1f2634}
+  .leaflet-popup-content{margin:.7rem .9rem;font:13px/1.5 ui-monospace,monospace}
+  .pname{color:#e8edf5;font-weight:600;margin-bottom:.3rem}
+</style>
+
+<div id="map"></div>
+
+<div class="panel" id="hud">
+  <h1>Ghost-V2X</h1>
+  <div class="sub" id="cam">connecting…</div>
+  <div class="risk UNKNOWN" id="risk">—</div>
+  <div class="row"><span class="k">Vehicles</span><span class="v" id="veh">—</span></div>
+  <div class="row"><span class="k">Pedestrians</span><span class="v" id="ped">—</span></div>
+  <div class="row"><span class="k">Near-misses / hr</span><span class="v" id="nm">—</span></div>
+  <div class="row"><span class="k">Calibration</span><span class="v" id="cal">—</span></div>
+  <div class="note" id="status"></div>
+</div>
+
+<div class="panel" id="legend">
+  <h1>Layers</h1>
+  <div class="sub">Two signals, different tenses.</div>
+  <div class="row">
+    <span><span class="swatch" style="background:#ff4d5e"></span>80+ injured</span>
+    <span class="k">lagging</span>
+  </div>
+  <div class="row">
+    <span><span class="swatch" style="background:#ff9f45"></span>50–79</span>
+    <span class="k">crash record</span>
+  </div>
+  <div class="row">
+    <span><span class="swatch" style="background:#ffd166"></span>25–49</span><span></span>
+  </div>
+  <div class="row">
+    <span><span class="swatch" style="background:#5a8fbf"></span>&lt;25</span><span></span>
+  </div>
+  <div class="row">
+    <span><span class="swatch alarm" style="background:#4de2ff"></span>Monitored, live</span>
+    <span class="k">leading</span>
+  </div>
+  <div class="note">
+    Circle size and colour show <b>people injured within 150m since 2021</b>, from
+    NYC's own crash record. That is history: it tells you where crashes
+    <i>have</i> happened.<br><br>
+    The pulsing marker is watched live. Near-misses are conflicts detected
+    <i>without</i> a crash — the leading indicator. Where those climb and the
+    crash count is still low is where the next one is likely.
+  </div>
+</div>
+
+<!-- Vendored, not CDN. A demo should not depend on unpkg being up,
+     and a local file needs no subresource-integrity hash. -->
+<script src="/static/leaflet.js"></script>
+<script>
+const map = L.map('map', {zoomControl:false}).setView([40.758, -73.968], 12);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19
+}).addTo(map);
+
+const colour = n => n>=80 ? '#ff4d5e' : n>=50 ? '#ff9f45'
+                  : n>=25 ? '#ffd166' : '#5a8fbf';
+const radius = n => Math.max(5, Math.min(22, 4 + Math.sqrt(n)*1.9));
+
+let liveMarker = null, drawn = false;
+
+async function tick(){
+  let d;
+  try { d = await (await fetch('/api/map-data')).json(); }
+  catch(e){ return; }                       // keep the last good frame on screen
+
+  if (!drawn && d.cameras.length){
+    d.cameras.forEach(c => {
+      L.circleMarker([c.lat, c.lon], {
+        radius: radius(c.injured), color: colour(c.injured),
+        weight: 1, fillColor: colour(c.injured), fillOpacity: .42
+      }).addTo(map).bindPopup(
+        `<div class="pname">${c.name}</div>` +
+        `${c.injured} people injured<br>${c.crashes} crashes since 2021<br>` +
+        `<span style="color:#5a6373">${c.area||''}</span>`
+      );
+    });
+    const top = d.cameras[0];
+    if (top) map.setView([top.lat, top.lon], 12);
+    drawn = true;
+  }
+
+  const L_ = d.live;
+  const r = document.getElementById('risk');
+  r.textContent = L_.risk; r.className = 'risk ' + L_.risk;
+  document.getElementById('cam').textContent = L_.camera || 'no camera';
+  document.getElementById('veh').textContent = L_.vehicles ?? '—';
+  document.getElementById('ped').textContent = L_.pedestrians ?? '—';
+  document.getElementById('nm').textContent  = L_.near_miss_last_hour ?? '—';
+  document.getElementById('cal').textContent =
+    L_.scale_error ? L_.scale_error + '× vs walking' : '—';
+  document.getElementById('status').textContent =
+    L_.status === 'ACTIVE' ? '' : L_.status + ' — not asserting anything about this street';
+
+  const mon = d.cameras.find(c => c.id === d.monitored_camera_id);
+  if (mon){
+    const hot = L_.risk === 'HIGH' || L_.risk === 'MEDIUM';
+    if (!liveMarker){
+      liveMarker = L.circleMarker([mon.lat, mon.lon], {
+        radius: 15, color:'#4de2ff', weight: 3, fillColor:'#4de2ff', fillOpacity:.2
+      }).addTo(map);
+    }
+    liveMarker.setStyle({
+      color: hot ? '#ff4d5e' : '#4de2ff',
+      fillColor: hot ? '#ff4d5e' : '#4de2ff',
+      fillOpacity: hot ? .55 : .2,
+      weight: hot ? 5 : 3
+    });
+    liveMarker.setRadius(hot ? 24 : 15);
+    liveMarker.bindPopup(
+      `<div class="pname">${mon.name}</div>` +
+      `<b style="color:${hot?'#ff4d5e':'#3ddc97'}">${L_.risk}</b> right now<br>` +
+      (L_.conflicts && L_.conflicts.length
+        ? `closest approach ${L_.conflicts[0].seconds_to_closest_approach}s, ` +
+          `miss ${L_.conflicts[0].miss_distance_m}m<br>` : '') +
+      `${L_.near_miss_last_hour} near-misses this hour<br>` +
+      `<span style="color:#5a6373">${mon.injured} injured here since 2021</span>`
+    );
+  }
+}
+tick(); setInterval(tick, 2000);
+</script>
