@@ -90,7 +90,16 @@ MISS_DISTANCE_M = float(os.getenv("MISS_DISTANCE_M", "2.0"))
 # wide avenue) by 22m deep. This is an eyeball estimate and the single highest
 # leverage thing to refine - use the crosswalk as a ruler, see calibrate.py.
 SRC_QUAD = os.getenv("SRC_QUAD", "0.28,0.60 0.66,0.56 0.78,0.97 0.05,0.93")
-DST_QUAD = os.getenv("DST_QUAD", "0,22 18,22 18,0 0,0")
+# Scale corrected from a physical measurement, not an estimate. With the
+# quad set to 18x22m, tracked pedestrians who were actively crossing showed a
+# p90 speed of 0.39 m/s. Humans walk at ~1.4 m/s, so the ground plane was
+# 1.4/0.39 = 3.6x too small, and every distance and TTC was wrong by that
+# factor. A camera looking down an avenue does see this far - roughly 65m
+# across and 79m deep is consistent with the view.
+#
+# Check it yourself: /api/state reports scale_error_vs_walking. A value near
+# 1.0 means the calibration is sound.
+DST_QUAD = os.getenv("DST_QUAD", "0,79 65,79 65,0 0,0")
 
 VEHICLE_CLASSES = {"car", "truck", "bus", "motorbike", "motorcycle", "vehicle", "van"}
 PEDESTRIAN_CLASSES = {"person", "pedestrian", "bicycle", "cyclist"}
@@ -566,12 +575,19 @@ async def loop() -> None:
                 # scale error in the ground-plane calibration - a way to
                 # measure the homography against a known physical constant
                 # rather than trusting an eyeballed quad.
+                # Use the 90th percentile, not the median. At a signalised
+                # crossing most pedestrians are standing still waiting for the
+                # light, and they drag a median toward zero for entirely real
+                # reasons. The fastest movers are the ones actually crossing,
+                # and those are the ones whose speed should equal 1.4 m/s if
+                # the metric scale is right.
                 ped_speeds = sorted(
                     float(np.linalg.norm(t.vel)) for t in tracks
                     if t.kind == "pedestrian" and t.hits >= 2)
                 if ped_speeds:
-                    STATE.median_ped_speed = round(
-                        ped_speeds[len(ped_speeds) // 2], 2)
+                    idx = min(len(ped_speeds) - 1,
+                              int(round(0.9 * (len(ped_speeds) - 1))))
+                    STATE.median_ped_speed = round(ped_speeds[idx], 2)
                 STATE.frames += 1
                 STATE.last_ok = now
                 STATE.consecutive_errors = 0
