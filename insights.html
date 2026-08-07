@@ -141,6 +141,10 @@
 </p>
 
 <script>
+// Camera names and NYPD factor strings come from third-party feeds we do
+// not control, and they are rendered as HTML. Escape at the boundary.
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hr = h => String(h).padStart(2,'0') + ':00';
 
 async function load(){
@@ -153,18 +157,18 @@ async function load(){
 
   document.getElementById('dot-rows').innerHTML = d.intersections.map(c => `
     <tr>
-      <td class="name">${c.name}<div class="why">${c.top_factors?.[0]?.factor ?? ''}</div></td>
-      <td class="num">${c.people_injured}</td>
+      <td class="name">${esc(c.name)}<div class="why">${esc(c.top_factors?.[0]?.factor ?? '')}</div></td>
+      <td class="num">${esc(c.people_injured)}</td>
       <td class="num">${c.peak_hours?.[0] ? hr(c.peak_hours[0].hour) : '—'}</td>
-      <td><span class="tag">${c.intervention}</span>
-          <div class="why">${c.rationale}</div></td>
+      <td><span class="tag">${esc(c.intervention)}</span>
+          <div class="why">${esc(c.rationale)}</div></td>
     </tr>`).join('');
 
   document.getElementById('law-rows').innerHTML = d.intersections.slice(0,10).map(c => `
     <tr>
-      <td class="name">${c.name}</td>
-      <td class="num">${c.people_injured}</td>
-      <td class="num">${c.crashes}</td>
+      <td class="name">${esc(c.name)}</td>
+      <td class="num">${esc(c.people_injured)}</td>
+      <td class="num">${esc(c.crashes)}</td>
       <td>${c.peak_hours?.[0] ? hr(c.peak_hours[0].hour) : '—'}</td>
     </tr>`).join('');
 }
@@ -178,10 +182,10 @@ async function live(){
     const hot = s.risk === 'HIGH' || s.risk === 'MEDIUM';
     document.getElementById('dispatch').innerHTML = hot
       ? `<b style="color:#ff4d5e">Dispatch packet ready</b> — ` +
-        `${s.camera.lat}, ${s.camera.lon} · ` +
-        `${s.counts.vehicles ?? 0} vehicles, ${s.counts.pedestrians ?? 0} people in frame` +
-        (s.conflicts?.[0] ? ` · closest approach ${s.conflicts[0].seconds_to_closest_approach}s` : '')
-      : `No conflict. Location held: ${s.camera?.lat ?? '—'}, ${s.camera?.lon ?? '—'}`;
+        `${esc(s.camera.lat)}, ${esc(s.camera.lon)} · ` +
+        `${esc(s.counts.vehicles ?? 0)} vehicles, ${esc(s.counts.pedestrians ?? 0)} people in frame` +
+        (s.conflicts?.[0] ? ` · closest approach ${esc(s.conflicts[0].seconds_to_closest_approach)}s` : '')
+      : `No conflict. Location held: ${esc(s.camera?.lat ?? '—')}, ${esc(s.camera?.lon ?? '—')}`;
   }catch(e){}
 }
 

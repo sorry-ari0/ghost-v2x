@@ -86,6 +86,10 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution:'&copy; OpenStreetMap &copy; CARTO', maxZoom:19
 }).addTo(map);
 
+// Same boundary: camera names are third-party data rendered into popups.
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 const colour = n => n>=80 ? '#ff4d5e' : n>=50 ? '#ff9f45'
                   : n>=25 ? '#ffd166' : '#5a8fbf';
 const radius = n => Math.max(5, Math.min(22, 4 + Math.sqrt(n)*1.9));
@@ -103,9 +107,9 @@ async function tick(){
         radius: radius(c.injured), color: colour(c.injured),
         weight: 1, fillColor: colour(c.injured), fillOpacity: .42
       }).addTo(map).bindPopup(
-        `<div class="pname">${c.name}</div>` +
-        `${c.injured} people injured<br>${c.crashes} crashes since 2021<br>` +
-        `<span style="color:#5a6373">${c.area||''}</span>`
+        `<div class="pname">${esc(c.name)}</div>` +
+        `${esc(c.injured)} people injured<br>${esc(c.crashes)} crashes since 2021<br>` +
+        `<span style="color:#5a6373">${esc(c.area||'')}</span>`
       );
     });
     const top = d.cameras[0];
@@ -141,13 +145,13 @@ async function tick(){
     });
     liveMarker.setRadius(hot ? 24 : 15);
     liveMarker.bindPopup(
-      `<div class="pname">${mon.name}</div>` +
-      `<b style="color:${hot?'#ff4d5e':'#3ddc97'}">${L_.risk}</b> right now<br>` +
+      `<div class="pname">${esc(mon.name)}</div>` +
+      `<b style="color:${hot?'#ff4d5e':'#3ddc97'}">${esc(L_.risk)}</b> right now<br>` +
       (L_.conflicts && L_.conflicts.length
-        ? `closest approach ${L_.conflicts[0].seconds_to_closest_approach}s, ` +
-          `miss ${L_.conflicts[0].miss_distance_m}m<br>` : '') +
-      `${L_.near_miss_last_hour} near-misses this hour<br>` +
-      `<span style="color:#5a6373">${mon.injured} injured here since 2021</span>`
+        ? `closest approach ${esc(L_.conflicts[0].seconds_to_closest_approach)}s, ` +
+          `miss ${esc(L_.conflicts[0].miss_distance_m)}m<br>` : '') +
+      `${esc(L_.near_miss_last_hour)} near-misses this hour<br>` +
+      `<span style="color:#5a6373">${esc(mon.injured)} injured here since 2021</span>`
     );
   }
 }
