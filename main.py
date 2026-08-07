@@ -329,6 +329,22 @@ def upscale_jpeg(jpeg: bytes, factor: float) -> bytes:
         return jpeg
 
 
+def jpeg_dimensions(jpeg: bytes) -> tuple[int, int]:
+    """Dimensions of the frame we are actually sending.
+
+    Deliberately measured locally rather than read back from the inference
+    response. Roboflow reports image size at the top level of the response,
+    not per-prediction, so reading it off a prediction silently yields a
+    fallback - and dividing 704-space coordinates by a wrong width puts every
+    object in the wrong place on the ground plane with no error raised. The
+    TTC numbers stay plausible and are entirely false.
+    """
+    from PIL import Image
+    import io
+    with Image.open(io.BytesIO(jpeg)) as img:
+        return img.width, img.height
+
+
 async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
     """Run hosted inference on one frame.
 
@@ -345,7 +361,7 @@ async def detect(client: httpx.AsyncClient, jpeg: bytes) -> list[dict]:
             "overlap": ROBOFLOW_OVERLAP,
             "format": "json",
         },
-        content=base64.b64encode(upscale_jpeg(jpeg, UPSCALE)),
+        content=base64.b64encode(jpeg),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=30,
     )
@@ -463,10 +479,10 @@ async def loop() -> None:
                     await asyncio.sleep(POLL_SECONDS)
                     continue
 
-                preds = await detect(client, jpeg)
-                iw = float(preds[0].get("image_width", 1280)) if preds else 1280.0
-                ih = float(preds[0].get("image_height", 720)) if preds else 720.0
-                dets = ground_positions(preds, iw, ih, h_mat)
+                frame = upscale_jpeg(jpeg, UPSCALE)
+                iw, ih = jpeg_dimensions(frame)
+                preds = await detect(client, frame)
+                dets = ground_positions(preds, float(iw), float(ih), h_mat)
 
                 now = time.time()
                 tracks = TRACKER.update(dets, now)
