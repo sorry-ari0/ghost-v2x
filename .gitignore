@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+frame.jpg
+scout/
+*.mp4
+.env
