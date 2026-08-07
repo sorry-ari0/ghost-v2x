@@ -650,16 +650,48 @@ WEBHOOK_AUTH_VALUE = os.getenv("WEBHOOK_AUTH_VALUE", "")
 # machine-gun the events dashboard and bury the alerts that matter.
 WEBHOOK_MIN_INTERVAL_S = float(os.getenv("WEBHOOK_MIN_INTERVAL_S", "3.0"))
 
-# UNKNOWN maps to No_Action deliberately. When the system cannot see the
-# street it must never request an intervention - the grid falls back to normal
-# fixed timing rather than acting on a guess.
-RECOMMENDED_ACTION = {
-    "HIGH": "Extend_All_Red_5s",
-    "MEDIUM": "Activate_LED_Warning",
-    "LOW": "Monitor",
-    "CLEAR": "No_Action",
-    "UNKNOWN": "No_Action",
-}
+# Intervention is chosen by how much time is actually left for someone to act,
+# not by risk label. The two are not the same, and conflating them gets the
+# design backwards.
+#
+# At a 25mph limit a driver needs ~2.7s to perceive, react, and stop. Our own
+# detection latency is ~2.9s (2.0s camera refresh + inference + actuation). So
+# a warning aimed at a human only helps if the conflict is spotted more than
+# ~5.6s out. Below that, no human can use it.
+#
+#   >= 5.6s   human-actionable   direct attention to the crosswalk
+#   2.9-5.6s  machine-only       hold the signal; needs nobody to react
+#   < 2.9s    do not alert       see below
+#
+# That last band matters. Warning someone with less time than they need is not
+# merely useless - a startled pedestrian mid-crossing may freeze rather than
+# clear, and a driver who flinches at a light may swerve. Below the reaction
+# floor the system records the event for analysis and stays silent.
+HUMAN_REACTION_S = 2.7
+DETECTION_LATENCY_S = 2.9
+HUMAN_ACTIONABLE_TTC_S = HUMAN_REACTION_S + DETECTION_LATENCY_S   # 5.6
+
+
+def choose_intervention(risk: str, ttc: float | None) -> tuple[str, str]:
+    """Return (action, why) from the time actually remaining."""
+    if risk in ("CLEAR", "UNKNOWN") or ttc is None:
+        # UNKNOWN never requests an intervention. When the system cannot see
+        # the street the grid falls back to normal fixed timing.
+        return "No_Action", "no conflict, or nothing reliable to say"
+
+    remaining = ttc - DETECTION_LATENCY_S
+    if ttc >= HUMAN_ACTIONABLE_TTC_S:
+        return ("Activate_LED_Crosswalk",
+                f"{remaining:.1f}s left after latency, above the {HUMAN_REACTION_S}s "
+                "a driver needs - in-pavement LEDs draw the eye to the crosswalk "
+                "itself, adding no message to read")
+    if remaining > 0:
+        return ("Extend_All_Red_5s",
+                f"only {remaining:.1f}s left, below human reaction time - hold "
+                "the signal, which removes the conflict without anyone reacting")
+    return ("Log_Only",
+            "already inside the reaction floor; a warning now could startle "
+            "rather than help, so record it and stay silent")
 SEVERITY = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low",
             "CLEAR": "low", "UNKNOWN": "low"}
 # UNKNOWN sits at the bottom so losing the feed never counts as an
@@ -670,6 +702,8 @@ RISK_ORDER = {"UNKNOWN": 0, "CLEAR": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3}
 def build_alert() -> dict:
     """The webhook payload. Mirrors docs/roboflow-agent-prompt.md."""
     top = STATE.conflicts[0] if STATE.conflicts else None
+    ttc = top["seconds_to_closest_approach"] if top else None
+    action, why = choose_intervention(STATE.risk, ttc)
     return {
         "event_type": "collision_warning",
         "schema_version": "ghost-v2x.v1",
@@ -681,12 +715,13 @@ def build_alert() -> dict:
         "severity": SEVERITY.get(STATE.risk, "low"),
         "ttc_seconds": top["seconds_to_closest_approach"] if top else None,
         "miss_distance_m": top["miss_distance_m"] if top else None,
-        "recommended_action": RECOMMENDED_ACTION.get(STATE.risk, "No_Action"),
+        "recommended_action": action,
+        "action_rationale": why,
         "collision_warning": STATE.risk in ("HIGH", "MEDIUM"),
         "vehicle_count": STATE.counts.get("vehicles", 0),
         "pedestrian_count": STATE.counts.get("pedestrians", 0),
         "alert_description": (
-            f"Ghost-V2X {STATE.risk}: {RECOMMENDED_ACTION.get(STATE.risk, 'No_Action')}"
+            f"Ghost-V2X {STATE.risk}: {action}"
             + (f"; TTC={top['seconds_to_closest_approach']}s"
                f"; miss={top['miss_distance_m']}m" if top else "")
             + f"; vehicles={STATE.counts.get('vehicles', 0)}"
