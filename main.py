@@ -157,6 +157,30 @@ class Track:
 # vehicle match and every car becomes a new track with no velocity history.
 MAX_SPEED_MPS = {"vehicle": 25.0, "pedestrian": 3.5}
 
+# A track whose implied speed exceeds this is not a real object moving fast,
+# it is an identity switch. At 15 pedestrians in frame, greedy association
+# occasionally hands track A the detection belonging to track B; the apparent
+# jump becomes a phantom velocity aimed at whatever is nearby, and that is
+# what produced sub-second TTCs against stationary traffic.
+IMPLAUSIBLE_SPEED_MPS = {"vehicle": 32.0, "pedestrian": 6.0}
+
+# Two observations is exactly what a velocity requires, and no more should be
+# demanded. Raising this to 3 costs a full cycle - measured at a 2s cadence,
+# the alertable moment (CPA 2.0s out, 0.0m miss) occurs at hits=2, and by
+# hits=3 the encounter has already passed. Whether a velocity is TRUSTWORTHY
+# is answered by the plausibility gate below, which tests physics rather than
+# imposing an arbitrary delay.
+MIN_HITS_FOR_CONFLICT = 2
+
+# A marginal conflict must survive consecutive assessments before it is
+# reported; one-frame coincidences are the dominant false alarm at a busy
+# intersection. This deliberately does NOT apply to an imminent conflict:
+# waiting a cycle to confirm a 2-second TTC spends most of the warning. The
+# same principle as the alert throttle - filter the marginal, never delay the
+# urgent.
+CONFLICT_PERSISTENCE = 2
+IMMINENT_TTC_S = 3.0
+
 
 class Tracker:
     """Greedy association in ground-plane metres, gated on predicted position."""
@@ -407,28 +431,54 @@ def ground_positions(preds: list[dict], w: float, h: float, h_mat: np.ndarray):
     return out
 
 
-def assess(tracks: list[Track]) -> tuple[str, list[dict]]:
-    vehicles = [t for t in tracks if t.kind == "vehicle" and t.hits >= 2]
-    peds = [t for t in tracks if t.kind == "pedestrian" and t.hits >= 2]
+def plausible(track: Track) -> bool:
+    """Is this track's velocity physically possible for what it claims to be?"""
+    speed = float(np.linalg.norm(track.vel))
+    return speed <= IMPLAUSIBLE_SPEED_MPS.get(track.kind, 32.0)
 
-    conflicts = []
+
+def assess(
+    tracks: list[Track], seen_before: set | None = None,
+) -> tuple[str, list[dict], set]:
+    """Return (risk, conflicts, pairs_in_conflict_now).
+
+    `seen_before` is the pair set from the previous assessment. A conflict is
+    only reported once it has persisted across consecutive assessments, so a
+    single frame of bad association cannot raise an alarm on its own.
+    """
+    usable = [t for t in tracks if t.hits >= MIN_HITS_FOR_CONFLICT and plausible(t)]
+    vehicles = [t for t in usable if t.kind == "vehicle"]
+    peds = [t for t in usable if t.kind == "pedestrian"]
+
+    candidates, pairs = [], set()
     for v in vehicles:
         for p in peds:
             t, miss = closest_approach(v.pos, v.vel, p.pos, p.vel)
             if 0 < t <= TTC_HORIZON_S and miss <= MISS_DISTANCE_M:
-                conflicts.append({
+                pair = (v.track_id, p.track_id)
+                pairs.add(pair)
+                candidates.append({
                     "vehicle_track": v.track_id,
                     "pedestrian_track": p.track_id,
                     "seconds_to_closest_approach": round(t, 2),
                     "miss_distance_m": round(miss, 2),
                 })
 
-    conflicts.sort(key=lambda c: c["seconds_to_closest_approach"])
-    if not conflicts:
-        return "CLEAR", []
-    soonest = conflicts[0]["seconds_to_closest_approach"]
+    prior = seen_before or set()
+    confirmed = [
+        c for c in candidates
+        # Imminent conflicts pass straight through; marginal ones must repeat.
+        if c["seconds_to_closest_approach"] <= IMMINENT_TTC_S
+        or CONFLICT_PERSISTENCE <= 1
+        or (c["vehicle_track"], c["pedestrian_track"]) in prior
+    ]
+
+    confirmed.sort(key=lambda c: c["seconds_to_closest_approach"])
+    if not confirmed:
+        return "CLEAR", [], pairs
+    soonest = confirmed[0]["seconds_to_closest_approach"]
     level = "HIGH" if soonest <= 3.0 else "MEDIUM" if soonest <= 5.0 else "LOW"
-    return level, conflicts[:5]
+    return level, confirmed[:5], pairs
 
 
 async def loop() -> None:
@@ -436,6 +486,7 @@ async def loop() -> None:
     h_mat = _homography(_parse_quad(SRC_QUAD), _parse_quad(DST_QUAD))
     cam: dict = {}
     last_frame_hash: bytes | None = None
+    prior_pairs: set = set()
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
         while True:
@@ -494,7 +545,7 @@ async def loop() -> None:
 
                 now = time.time()
                 tracks = TRACKER.update(dets, now)
-                risk, conflicts = assess(tracks)
+                risk, conflicts, prior_pairs = assess(tracks, prior_pairs)
 
                 STATE.status = "ACTIVE"
                 STATE.reason = "ok"
@@ -648,6 +699,7 @@ async def replay_scenario() -> None:
     global REPLAY_UNTIL
     log.info("replay: synthetic near-miss starting")
     tracker = Tracker()
+    replay_pairs: set = set()
     start = time.time()
     REPLAY_UNTIL = start + 30.0
 
@@ -660,7 +712,7 @@ async def replay_scenario() -> None:
             now = start + t
             tracks = tracker.update(
                 [("vehicle", car), ("pedestrian", ped)], now)
-            risk, conflicts = assess(tracks)
+            risk, conflicts, replay_pairs = assess(tracks, replay_pairs)
 
             STATE.status = "ACTIVE"
             STATE.reason = "REPLAY - synthetic scenario, not live traffic"
