@@ -246,6 +246,7 @@ class State:
     counts: dict[str, int] = field(default_factory=dict)
     frames: int = 0
     duplicate_frames: int = 0
+    median_ped_speed: float | None = None
     alerts_sent: int = 0
     alert_error: str = ""
     errors: int = 0
@@ -264,6 +265,10 @@ class State:
             "camera": self.camera,
             "frames": self.frames,
             "duplicate_frames": self.duplicate_frames,
+            "median_ped_speed_mps": self.median_ped_speed,
+            "scale_error_vs_walking": (
+                round(self.median_ped_speed / 1.4, 2)
+                if self.median_ped_speed else None),
             "alerts_sent": self.alerts_sent,
             "alert_error": self.alert_error,
             "errors": self.errors,
@@ -556,6 +561,17 @@ async def loop() -> None:
                     "pedestrians": sum(1 for t in tracks if t.kind == "pedestrian"),
                     "detections": len(dets),
                 }
+                # Calibration self-check. Human walking speed is ~1.4 m/s, so
+                # the median observed pedestrian speed divided by 1.4 is the
+                # scale error in the ground-plane calibration - a way to
+                # measure the homography against a known physical constant
+                # rather than trusting an eyeballed quad.
+                ped_speeds = sorted(
+                    float(np.linalg.norm(t.vel)) for t in tracks
+                    if t.kind == "pedestrian" and t.hits >= 2)
+                if ped_speeds:
+                    STATE.median_ped_speed = round(
+                        ped_speeds[len(ped_speeds) // 2], 2)
                 STATE.frames += 1
                 STATE.last_ok = now
                 STATE.consecutive_errors = 0
