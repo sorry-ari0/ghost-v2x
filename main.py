@@ -903,6 +903,11 @@ if _static.exists():
     app.mount("/static", StaticFiles(directory=str(_static)), name="static")
 
 
+# Google's frontend reserves /healthz and 404s it before it ever reaches the
+# container - verified against both Cloud Run host forms while the same route
+# returned 200 locally. /health is the reachable one; /healthz stays registered
+# so local tooling and the chaos suite keep working.
+@app.get("/health")
 @app.get("/healthz")
 def healthz():
     """Liveness only. The pipeline degrades to FAIL_SAFE without the container

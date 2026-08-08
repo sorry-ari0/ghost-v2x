@@ -524,7 +524,8 @@ uvicorn main:app --reload
 | `/api/insights` | Per-intersection interventions from NYPD factors |
 | `/api/alert` | Exactly what would be POSTed right now (webhook debugging) |
 | `POST /api/replay` | Trigger the synthetic near-miss - safe to hit live on stage |
-| `/healthz` | Liveness - green even in `FAIL_SAFE` |
+| `/health` | Liveness - green even in `FAIL_SAFE`. (`/healthz` is
+reserved by Google's frontend on Cloud Run and never reaches the container.) |
 
 ---
 
