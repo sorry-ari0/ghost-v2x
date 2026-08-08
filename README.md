@@ -461,6 +461,23 @@ stage.
 
 ---
 
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `main.py` | The sensor: poll, detect, project, track, predict, alert |
+| `dashboard.html` `map.html` `insights.html` | Operator, planning, and audience views |
+| `receiver/` | Mock signal controller — the downstream actuator, deployed separately |
+| `chaos_test.py` | Nine adversarial scenarios against the real loop |
+| `rank_cameras.py` `validate_ranking.py` | Camera selection from the crash record, and its validation |
+| `build_insights.py` | Per-intersection interventions from NYPD contributing factors |
+| `probe_model.py` `scout_cameras.py` `calibrate.py` | Setup and diagnostic tools |
+
+Two Cloud Run services: `ghost-v2x` from the root, `ghost-v2x-receiver` from
+`receiver/`.
+
+---
+
 ## Run it
 
 ### Cloud Run
