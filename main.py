@@ -300,6 +300,65 @@ def _scale_error_value(self):
 
 State.scale_error_value = _scale_error_value
 
+CONFLICT_LOG = Path("/tmp/ghost_v2x_conflicts.json")
+
+
+def record_conflict(camera_id, camera_name, risk, ttc, miss_m, at) -> None:
+    """Append to the durable per-location conflict record.
+
+    This is the Traffic Conflict Technique, automated. Counting near-misses
+    assesses an intersection without waiting years for crashes to accumulate,
+    which is established road-safety practice; it is rarely done only because
+    it has meant a human observer at the corner with a clipboard for days.
+
+    Crashes are lagging and rare. Conflicts are leading and frequent. A corner
+    generating conflicts but not yet crashes is where the next one happens,
+    and that is the layer the planning map is missing.
+    """
+    try:
+        log = (json.loads(CONFLICT_LOG.read_text(encoding="utf-8"))
+               if CONFLICT_LOG.exists() else {})
+    except Exception:
+        log = {}
+    entry = log.setdefault(
+        camera_id, {"camera_name": camera_name, "conflicts": [], "first_seen": at})
+    entry["camera_name"] = camera_name
+    entry["conflicts"].append(
+        {"at": round(at, 1), "risk": risk, "ttc": ttc, "miss_m": miss_m})
+    entry["conflicts"] = entry["conflicts"][-500:]   # a rate signal, not an archive
+    entry["last_seen"] = at
+    try:
+        CONFLICT_LOG.write_text(json.dumps(log), encoding="utf-8")
+    except Exception as exc:
+        log.warning if False else None
+        logging.getLogger("ghost-v2x").warning("could not persist conflict: %s", exc)
+
+
+def conflict_summary() -> dict:
+    """Per-location conflict counts and observed hours, for the planning map."""
+    try:
+        raw = (json.loads(CONFLICT_LOG.read_text(encoding="utf-8"))
+               if CONFLICT_LOG.exists() else {})
+    except Exception:
+        return {}
+    out = {}
+    for cam_id, e in raw.items():
+        cs = e.get("conflicts", [])
+        if not cs:
+            continue
+        hours = max((e.get("last_seen", 0) - e.get("first_seen", 0)) / 3600.0, 1 / 60)
+        out[cam_id] = {
+            "camera_name": e.get("camera_name"),
+            "conflicts": len(cs),
+            "high": sum(1 for c in cs if c.get("risk") == "HIGH"),
+            "observed_hours": round(hours, 2),
+            "per_hour": round(len(cs) / hours, 1),
+            "worst_ttc": min((c["ttc"] for c in cs if c.get("ttc") is not None),
+                             default=None),
+        }
+    return out
+
+
 STATE = State()
 TRACKER = Tracker()
 
@@ -588,6 +647,11 @@ async def loop() -> None:
                     })
                     # Bounded; this is a live signal, not an archive.
                     del STATE.near_misses[:-200]
+                    record_conflict(
+                        STATE.camera.get("id", "unknown"),
+                        STATE.camera.get("name", "unknown"), risk,
+                        conflicts[0]["seconds_to_closest_approach"],
+                        conflicts[0]["miss_distance_m"], now)
                 STATE.counts = {
                     "vehicles": sum(1 for t in tracks if t.kind == "vehicle"),
                     "pedestrians": sum(1 for t in tracks if t.kind == "pedestrian"),
@@ -915,7 +979,9 @@ def api_map_data():
 
     now = time.time()
     recent = [n for n in STATE.near_misses if now - n["at"] <= 3600]
+    observed = conflict_summary()
     return JSONResponse({
+        "observed": observed,
         "monitored_camera_id": STATE.camera.get("id"),
         "live": {
             "status": STATE.status,

@@ -10,6 +10,15 @@
          backdrop-filter:blur(8px)}
   #hud{top:1rem;left:1rem;width:290px}
   #legend{bottom:1rem;left:1rem;width:290px}
+  #plan{top:1rem;right:1rem;width:330px;max-height:calc(100vh - 2rem);
+        overflow:auto}
+  #plantab{width:100%;border-collapse:collapse;font-size:.76rem}
+  #plantab td{padding:.4rem .3rem;border-bottom:1px solid #161c28;
+              vertical-align:top}
+  .pn{color:#e8edf5}
+  .sig{color:#5a6373;font-size:.7rem}
+  .hot{color:#ff4d5e;font-weight:600}
+  .watch{color:#4de2ff}
   h1{font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;
      color:#7d8799;margin:0 0 .15rem}
   .sub{color:#5a6373;font-size:.74rem;margin-bottom:.9rem}
@@ -56,6 +65,25 @@
   <div class="row"><span class="k">Near-misses / hr</span><span class="v" id="nm">—</span></div>
   <div class="row"><span class="k">Calibration</span><span class="v" id="cal">—</span></div>
   <div class="note" id="status"></div>
+</div>
+
+<div class="panel" id="plan">
+  <h1>Fix list</h1>
+  <div class="sub">Ranked for intervention, not for alarm.</div>
+  <table id="plantab"><tbody>
+    <tr><td style="color:#5a6373">observing…</td></tr>
+  </tbody></table>
+  <div class="note">
+    Crashes tell you where people <i>have</i> been hurt — a lagging count that
+    takes years to accumulate. Conflicts are the leading signal: near-misses
+    detected without anyone being hit.<br><br>
+    This is the <b>Traffic Conflict Technique</b>, which is established road
+    safety practice and normally requires an observer standing at the corner
+    with a clipboard for days. That is why it is almost never done. Here it
+    runs continuously, for free, on a camera already installed.<br><br>
+    A corner accumulating conflicts faster than its crash history predicts is
+    where to spend money <b>before</b> someone is hurt.
+  </div>
 </div>
 
 <div class="panel" id="legend">
@@ -141,6 +169,29 @@ async function tick(){
     L_.scale_error ? L_.scale_error + '× vs walking' : '—';
   document.getElementById('status').textContent =
     L_.status === 'ACTIVE' ? '' : L_.status + ' — not asserting anything about this street';
+
+  // Planning layer: crash history plus observed conflicts, ranked by need.
+  const obs = d.observed || {};
+  const plan = d.cameras.map(c => {
+    const o = obs[c.id];
+    return {...c, seen: o ? o.conflicts : null,
+            rate: o ? o.per_hour : null, hrs: o ? o.observed_hours : null};
+  }).sort((a,b) => (b.rate ?? -1) - (a.rate ?? -1) || b.injured - a.injured)
+    .slice(0, 8);
+
+  document.getElementById('plantab').innerHTML = plan.map(c => {
+    const watched = c.id === d.monitored_camera_id;
+    // sig is pre-built HTML: the tags are literal and both branches
+    // escape their data, so it is interpolated raw on purpose.
+    const sig = c.rate != null
+      ? `<span class="hot">${esc(c.rate)} conflicts/hr</span> observed over ${esc(c.hrs)}h`
+      : `<span class="sig">not yet observed</span>`;
+    return `<tr><td>
+      <div class="pn">${esc(c.name)}${watched?' <span class="watch">● live</span>':''}</div>
+      <div class="sig">${esc(c.injured)} injured · ${esc(c.crashes)} crashes since 2021</div>
+      <div class="sig">${sig}</div>
+    </td></tr>`;
+  }).join('');
 
   const mon = d.cameras.find(c => c.id === d.monitored_camera_id);
   if (mon){
