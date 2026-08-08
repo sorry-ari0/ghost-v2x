@@ -718,10 +718,18 @@ WEBHOOK_MIN_INTERVAL_S = float(os.getenv("WEBHOOK_MIN_INTERVAL_S", "3.0"))
 # not by risk label. The two are not the same, and conflating them gets the
 # design backwards.
 #
-# At a 25mph limit a driver needs ~2.7s to perceive, react, and stop. Our own
-# detection latency is ~2.9s (2.0s camera refresh + inference + actuation). So
-# a warning aimed at a human only helps if the conflict is spotted more than
-# ~5.6s out. Below that, no human can use it.
+# At a 25mph limit a driver needs ~2.7s to perceive, react, and stop.
+#
+# Our own latency, measured rather than assumed: 67ms to fetch a frame, 11ms to
+# upscale, 167ms for hosted inference - a 0.25s pipeline. The bottleneck is not
+# compute, it is the camera: it publishes every ~2.0s, so a frame can already
+# be that old on arrival. Worst-case information age is therefore ~2.25s, and
+# ~2.5s once signal actuation is included.
+#
+# DETECTION_LATENCY_S stays at 2.9 deliberately. It is the conservative end of
+# the measurement, and in a system that decides whether to warn a person about
+# an oncoming vehicle, the error worth making is assuming you are slower than
+# you are. So a warning aimed at a human only helps above ~5.6s out.
 #
 #   >= 5.6s   human-actionable   direct attention to the crosswalk
 #   2.9-5.6s  machine-only       hold the signal; needs nobody to react

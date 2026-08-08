@@ -377,8 +377,17 @@ surveyed road features, not more code.
 This is the part that inverted once we worked the numbers.
 
 At a 25mph limit a driver needs **2.7s** to perceive, react and stop (1.5s
-perception-reaction, 13.9m braking). Detection latency here is **2.9s**, mostly
-the camera's 2-second refresh. So a warning aimed at a *person* only helps if
+perception-reaction, 13.9m braking).
+
+Our own latency, measured: **67ms** to fetch a frame, **11ms** to upscale,
+**167ms** for hosted inference — a **0.25s** pipeline. The bottleneck is not
+compute, it is the camera, which publishes every ~2.0s, so a frame can already
+be that old when it arrives. Worst-case information age is **~2.25s**, or
+~2.5s including signal actuation.
+
+The model uses **2.9s**, the conservative end of that measurement. In a system
+deciding whether to warn someone about an oncoming vehicle, the error worth
+making is assuming you are slower than you are. So a warning aimed at a *person* only helps if
 the conflict is seen more than **5.6s** out.
 
 The original design did the opposite - warned humans at 3-5s, when they
