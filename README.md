@@ -10,7 +10,7 @@ capital expense. Point it at a camera ID and it starts predicting.
 
 | | |
 |---|---|
-| **Risk map** | https://ghost-v2x-73791867861.us-east1.run.app/map |
+| **Planning map** | https://ghost-v2x-73791867861.us-east1.run.app/map |
 | **Who it's for** | https://ghost-v2x-73791867861.us-east1.run.app/insights |
 | **Live sensor** | https://ghost-v2x-73791867861.us-east1.run.app/ |
 | **Signal controller** | https://ghost-v2x-receiver-73791867861.us-east1.run.app/ |
@@ -163,6 +163,41 @@ surveyed against real road features, which is a measurement, not more code.
 | **Technical execution** | Ground-plane projection, plausibility-gated tracking, closest-point-of-approach physics, latency-aware intervention, 9/9 adversarial scenarios, self-measured calibration. |
 | **Cloud Run** | Two services: `ghost-v2x` (sensor) and `ghost-v2x-receiver` (signal controller). |
 | **Open source** | This repository. Every non-obvious decision is explained where it lives, including the three bugs testing caught. |
+
+---
+
+## The planning surface
+
+Crash data can only tell a city where people **have already been hurt**. It is a
+lagging count, it accumulates over years, and acting on it means someone was
+injured first.
+
+Conflicts are the leading signal. Every near-miss the sensor detects — a
+vehicle and a pedestrian on a converging course that resolved without contact —
+is written to a durable per-location record with its time, severity, closest
+approach and miss distance. The map ranks corners by **observed conflicts per
+hour** alongside their crash history.
+
+This is the **Traffic Conflict Technique**, and it is established road-safety
+practice rather than something we invented: you assess an intersection by
+counting near-misses instead of waiting for collisions. It is almost never done
+in practice because it has meant paying a trained observer to stand on the
+corner with a clipboard for days at a time. Here it runs continuously, on a
+camera that is already installed and already powered.
+
+The planning question it answers is the one crash data cannot:
+
+> **Which corner is accumulating conflicts faster than its crash history
+> predicts?**
+
+That is where to spend money *before* someone is hurt, instead of after. A
+corner with few recorded crashes but a high conflict rate is not safe — it is
+lucky, and luck is not a countermeasure.
+
+First responders can read the same live view, and the dispatch packet is
+genuinely useful in seconds. But **planning is the primary purpose**: the value
+compounds over months of observation, not over the ninety seconds of any single
+incident.
 
 ---
 
