@@ -52,11 +52,26 @@
   .pill{display:inline-block;padding:.2rem .6rem;border-radius:99px;
         font-size:.75rem;border:1px solid #2a3346}
   a{color:#4de2ff}
-  .nav{margin-top:2.5rem;color:#5a6373;font-size:.8rem}
+  .topnav{display:flex;gap:.35rem;padding:.6rem 0 1.2rem;flex-wrap:wrap}
+  .topnav a{padding:.4rem .9rem;border-radius:99px;text-decoration:none;
+            font-size:.8rem;color:#8b95a8;border:1px solid #1f2634;
+            background:#101622}
+  .topnav a:hover{color:#e8edf5;border-color:#2a3346}
+  .topnav a.here{color:#0b0e14;background:#4de2ff;border-color:#4de2ff;
+                 font-weight:600}
+  .corners{margin-top:2.5rem}
+  .corners td{font-size:.82rem}
+  .mine{color:#4de2ff}
+
 </style>
 
 <div id="alert"><div class="bar HIGH" id="bar"></div></div>
 
+<nav class="topnav">
+  <a href="/" data-p="/">Live sensor</a>
+  <a href="/map" data-p="/map">Risk map</a>
+  <a href="/insights" data-p="/insights">Who it's for</a>
+</nav>
 <h1>Ghost-V2X</h1>
 <div class="sub">Collision risk from cameras the city already owns.</div>
 <div id="cam" class="pill">connecting…</div>
@@ -77,10 +92,15 @@
 <tbody id="rows"><tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr>
 </tbody></table>
 
-<div class="nav">
-  <a href="/map">Risk map</a> ·
-  <a href="/insights">Who this is for</a> ·
-  <a href="/api/state">Raw state</a>
+<div class="corners">
+  <h1>Highest-risk corners in NYC</h1>
+  <div class="sub">Ranked by people injured within 150m since 2021, from NYC's
+    crash record. This sensor watches one of them —
+    <a href="/map">see all 100 on the map</a>.</div>
+  <table><thead><tr><th>#</th><th>Intersection</th><th>Injured</th>
+  <th>Crashes</th></tr></thead>
+  <tbody id="corners"><tr><td colspan="4" style="color:#5a6373">loading…</td></tr>
+  </tbody></table>
 </div>
 
 <script>
@@ -143,5 +163,24 @@ async function tick(){
      <td>${esc(c.miss_distance_m)}m</td></tr>`
   ).join('') : '<tr><td colspan="4" style="color:#5a6373">no conflicts</td></tr>';
 }
+async function corners(){
+  try{
+    const d = await (await fetch('/api/map-data')).json();
+    document.getElementById('corners').innerHTML = d.cameras.slice(0,10)
+      .map((c,i) => {
+        const mine = c.id === d.monitored_camera_id;
+        return `<tr class="${mine?'mine':''}">
+          <td>${i+1}</td>
+          <td>${esc(c.name)}${mine?' <span class="pill">watching now</span>':''}</td>
+          <td>${esc(c.injured)}</td><td>${esc(c.crashes)}</td></tr>`;
+      }).join('');
+  }catch(e){}
+}
+corners();
 tick(); setInterval(tick, 1500);
+</script>
+<script>
+document.querySelectorAll('.topnav a').forEach(a => {
+  if (a.dataset.p === location.pathname) a.classList.add('here');
+});
 </script>

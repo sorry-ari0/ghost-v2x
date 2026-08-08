@@ -35,8 +35,21 @@
   .note{color:#6b7688;font-size:.78rem;max-width:70ch;line-height:1.6}
   a{color:#4de2ff}
   .wink{color:#5a6373;font-size:.74rem;font-style:italic}
+  .topnav{display:flex;gap:.35rem;padding:.6rem 0 1.2rem;flex-wrap:wrap}
+  .topnav a{padding:.4rem .9rem;border-radius:99px;text-decoration:none;
+            font-size:.8rem;color:#8b95a8;border:1px solid #1f2634;
+            background:#101622}
+  .topnav a:hover{color:#e8edf5;border-color:#2a3346}
+  .topnav a.here{color:#0b0e14;background:#4de2ff;border-color:#4de2ff;
+                 font-weight:600}
+
 </style>
 
+<nav class="topnav">
+  <a href="/" data-p="/">Live sensor</a>
+  <a href="/map" data-p="/map">Risk map</a>
+  <a href="/insights" data-p="/insights">Who it's for</a>
+</nav>
 <h1>Ghost-V2X · Who this is for</h1>
 <p class="lede">
   One camera network, three audiences, three time horizons. The same detection
@@ -190,4 +203,9 @@ async function live(){
 }
 
 load(); live(); setInterval(live, 2000);
+</script>
+<script>
+document.querySelectorAll('.topnav a').forEach(a => {
+  if (a.dataset.p === location.pathname) a.classList.add('here');
+});
 </script>
