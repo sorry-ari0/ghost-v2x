@@ -858,11 +858,18 @@ async def replay_scenario() -> None:
     REPLAY_UNTIL = start + 30.0
 
     async with httpx.AsyncClient() as client:
-        for step in range(10):
-            t = step * 1.6
-            # Car north at 8 m/s; pedestrian east at 1.4 m/s, timed to meet.
-            car = np.array([10.0, 40.0 - 8.0 * t])
-            ped = np.array([4.4 + 1.4 * t, 8.0])
+        # Tuned so the conflict is first seen well outside the reaction floor
+        # and closes through every decision band, rather than appearing already
+        # inside it. A demo that only ever shows Log_Only hides the reasoning.
+        #
+        #   ~7s out  Activate_LED_Crosswalk   a human still has time
+        #   ~4s out  Extend_All_Red_5s        too late for a person, not for the signal
+        #   ~2s out  Log_Only                 inside the floor, stay silent
+        for step in range(12):
+            t = step * 1.4
+            # Car north at 5 m/s from 75m; pedestrian east at 1.4 m/s, timed to meet.
+            car = np.array([10.0, 75.0 - 5.0 * t])
+            ped = np.array([10.0 - 1.4 * 13.0 + 1.4 * t, 8.0])
             now = start + t
             tracks = tracker.update(
                 [("vehicle", car), ("pedestrian", ped)], now)
