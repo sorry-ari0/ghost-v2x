@@ -922,6 +922,17 @@ def healthz():
     return {"ok": True}
 
 
+@app.get("/api/replay")
+def api_replay_get():
+    """A browser GET lands here. Say what to do instead of returning a bare 405."""
+    return JSONResponse({
+        "ok": False,
+        "error": "This endpoint is POST-only; a browser address bar sends GET.",
+        "use_the_button": "Open / or /map and press 'Simulate a near-miss'.",
+        "or_curl": "curl -s -X POST -d '' <this-url>",
+    }, status_code=405)
+
+
 @app.post("/api/replay")
 async def api_replay():
     """Trigger the synthetic near-miss. Safe to hit live during a demo."""

@@ -52,6 +52,13 @@
   .pill{display:inline-block;padding:.2rem .6rem;border-radius:99px;
         font-size:.75rem;border:1px solid #2a3346}
   a{color:#4de2ff}
+  .trigger{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.1rem;
+           border-radius:99px;border:1px solid #2a3346;background:#131823;
+           color:#c8d0e0;font:inherit;font-size:.82rem;cursor:pointer}
+  .trigger:hover{border-color:#4de2ff;color:#e8edf5}
+  .trigger:disabled{opacity:.45;cursor:default;border-color:#1f2634}
+  .trigger .dot{width:8px;height:8px;border-radius:50%;background:#4de2ff}
+  .trigger.run .dot{animation:beat 1s ease-in-out infinite}
   .topnav{display:flex;gap:.35rem;padding:.6rem 0 1.2rem;flex-wrap:wrap}
   .topnav a{padding:.4rem .9rem;border-radius:99px;text-decoration:none;
             font-size:.8rem;color:#8b95a8;border:1px solid #1f2634;
@@ -75,6 +82,7 @@
 <h1>Ghost-V2X</h1>
 <div class="sub">Collision risk from cameras the city already owns.</div>
 <div id="cam" class="pill">connecting…</div>
+<p><button class="trigger"><span class="dot"></span><span class="t">Simulate a near-miss</span></button></p>
 <div class="risk UNKNOWN" id="risk">—</div>
 <div class="sub" id="reason"></div>
 
@@ -178,6 +186,25 @@ async function corners(){
 }
 corners();
 tick(); setInterval(tick, 1500);
+// The replay endpoint is POST-only, so pasting its URL into a browser gets a
+// 405. A demo should not need a terminal.
+async function fireReplay(btn){
+  btn.disabled = true; btn.classList.add('run');
+  const label = btn.querySelector('span.t');
+  const was = label.textContent;
+  label.textContent = 'running…';
+  try{
+    const r = await fetch('/api/replay', {method:'POST', body:''});
+    const j = await r.json();
+    if (!j.ok) label.textContent = j.error || 'already running';
+  }catch(e){ label.textContent = 'failed'; }
+  setTimeout(() => {
+    btn.disabled = false; btn.classList.remove('run'); label.textContent = was;
+  }, 18000);
+}
+document.querySelectorAll('.trigger').forEach(
+  b => b.addEventListener('click', () => fireReplay(b)));
+
 </script>
 <script>
 document.querySelectorAll('.topnav a').forEach(a => {
